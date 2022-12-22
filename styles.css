@@ -76,6 +76,14 @@ p {
   font-family: "Noto Sans", sans-serif;
   font-family: "Poppins", sans-serif;
 }
+.txt-title{
+  text-align: center;
+  background-color: aquamarine;
+  border-radius: 5px;
+  color: #212121;
+  font-family: "Noto Sans", sans-serif;
+  font-family: "Poppins", sans-serif;
+}
 .main-section {
   background: rgb(238, 174, 202);
   background: radial-gradient(
