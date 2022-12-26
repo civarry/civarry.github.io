@@ -99,6 +99,19 @@ p {
   margin: 10px auto;
   height: auto;
 }
+a.yt-subscribe{
+  text-decoration: none;
+  color: white;
+  background-color: #ab0808;
+  padding: 10px;
+  transition: 0.2s;
+}
+a.yt-subscribe:hover{
+  background-color: #d55c5c;
+  color: aliceblue;
+  border-radius: 3px;
+  padding-right: 20px;
+}
 @media only screen and (max-width: 600px) {
   body {
     background: rgb(32, 20, 224);
@@ -108,5 +121,5 @@ p {
       rgba(222, 152, 231, 1) 22%,
       rgba(0, 255, 136, 1) 87%
     );
-  }
+  } 
 }
