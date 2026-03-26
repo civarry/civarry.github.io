@@ -322,8 +322,27 @@ function applyAnnouncement(announce, updatedAt) {
   lastAnnounceUpdate = updatedAt;
 
   text.textContent = announce.message;
+  text.classList.remove('scrolling');
+  text.style.removeProperty('--marquee-duration');
+  text.style.removeProperty('--marquee-distance');
   banner.style.display = 'block';
   banner.className = `announce-banner ${announce.type || 'flash'}`;
+
+  // Enable marquee scroll if text overflows
+  requestAnimationFrame(() => {
+    const container = text.parentElement;
+    if (text.scrollWidth > container.clientWidth) {
+      const gap = 80;
+      const distance = text.scrollWidth + gap;
+      const speed = 60; // pixels per second
+      text.style.setProperty('--marquee-duration', `${distance / speed}s`);
+      text.style.setProperty('--marquee-distance', `-${distance}px`);
+      text.style.paddingRight = `${gap}px`;
+      text.classList.add('scrolling');
+    } else {
+      text.style.paddingRight = '';
+    }
+  });
 
   // Auto-dismiss for flash type
   if (announceTimer) clearTimeout(announceTimer);
