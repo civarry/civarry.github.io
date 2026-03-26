@@ -268,6 +268,85 @@ form.addEventListener('submit', async (e) => {
   submitBtn.classList.remove('loading');
 });
 
+// ========== Remote Control (Telegram → Supabase → Site) ==========
+let currentTheme = 'dark';
+let lastAnnounceUpdate = null;
+let announceTimer = null;
+
+async function fetchSiteSettings() {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/site_settings?select=key,value,updated_at`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+    if (!response.ok) return;
+    const settings = await response.json();
+
+    for (const setting of settings) {
+      if (setting.key === 'theme') {
+        applyTheme(setting.value);
+      } else if (setting.key === 'announce') {
+        applyAnnouncement(setting.value, setting.updated_at);
+      }
+    }
+  } catch {
+    // Silent fail — remote control is optional
+  }
+}
+
+function applyTheme(theme) {
+  if (theme === currentTheme) return;
+  currentTheme = theme;
+  if (theme === 'light') {
+    document.body.classList.add('light-mode');
+  } else {
+    document.body.classList.remove('light-mode');
+  }
+}
+
+function applyAnnouncement(announce, updatedAt) {
+  const banner = document.getElementById('announce-banner');
+  const text = document.getElementById('announce-text');
+  if (!banner || !text) return;
+
+  if (!announce.active) {
+    banner.style.display = 'none';
+    lastAnnounceUpdate = null;
+    return;
+  }
+
+  // Don't re-show the same announcement
+  if (updatedAt === lastAnnounceUpdate) return;
+  lastAnnounceUpdate = updatedAt;
+
+  text.textContent = announce.message;
+  banner.style.display = 'block';
+  banner.className = `announce-banner ${announce.type || 'flash'}`;
+
+  // Auto-dismiss for flash type
+  if (announceTimer) clearTimeout(announceTimer);
+  if (announce.type === 'flash' && announce.duration > 0) {
+    announceTimer = setTimeout(() => {
+      banner.style.display = 'none';
+    }, announce.duration * 1000);
+  }
+}
+
+// Close button
+const announceClose = document.getElementById('announce-close');
+if (announceClose) {
+  announceClose.addEventListener('click', () => {
+    const banner = document.getElementById('announce-banner');
+    if (banner) banner.style.display = 'none';
+  });
+}
+
+// Poll settings every 5 seconds
+fetchSiteSettings();
+setInterval(fetchSiteSettings, 5000);
+
 // ========== Smooth Scroll for Nav Links ==========
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function (e) {

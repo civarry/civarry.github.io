@@ -21,6 +21,89 @@
   --radius-lg: 14px;
 }
 
+/* ========== Light Mode Override ========== */
+body.light-mode {
+  --bg-primary: #fafafa;
+  --bg-secondary: #f0f0f0;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5f5f5;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --border: #e0e0e0;
+  --border-hover: #cccccc;
+  --accent-glow: rgba(59, 130, 246, 0.1);
+}
+
+body.light-mode .navbar {
+  background: rgba(250, 250, 250, 0.85);
+}
+
+body.light-mode .navbar.scrolled {
+  background: rgba(250, 250, 250, 0.95);
+}
+
+body.light-mode .hero-name {
+  background: linear-gradient(135deg, #1a1a1a 0%, #555555 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (max-width: 768px) {
+  body.light-mode .nav-links {
+    background: rgba(250, 250, 250, 0.98);
+  }
+}
+
+/* ========== Announcement Banner ========== */
+.announce-banner {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, var(--accent), #6366f1);
+  color: white;
+  text-align: center;
+  padding: 0.75rem 3rem 0.75rem 2rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 99;
+  animation: bannerSlideDown 0.4s ease;
+}
+
+.announce-banner.flash {
+  animation: bannerSlideDown 0.4s ease, bannerPulse 2s ease 1;
+}
+
+.announce-close {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.announce-close:hover {
+  color: white;
+}
+
+@keyframes bannerSlideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes bannerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -31,6 +114,7 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 ::selection {
