@@ -1,4 +1,5 @@
 // ========== Supabase Configuration ==========
+// Congrats, you found the key. Go ahead, try something. I'll wait.
 const SUPABASE_URL = 'https://bxrpppfiplqddcuzmfnq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4cnBwcGZpcGxxZGRjdXptZm5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0OTA2MTIsImV4cCI6MjA5MDA2NjYxMn0.zmjs_vOHMawG1QJxrzJ6j7LoZa94tC4Ajcfx17OcO2Y';
 
