@@ -24,7 +24,7 @@ function isRateLimited() {
     const recent = timestamps.filter(t => now - t < RATE_LIMIT.windowMs);
     return recent.length >= RATE_LIMIT.maxMessages;
   } catch {
-    return false;
+    return true; // Fail closed — assume rate limited if state is corrupt
   }
 }
 
@@ -196,10 +196,10 @@ form.addEventListener('submit', async (e) => {
     return;
   }
 
-  // Get and sanitize form data (OWASP: XSS prevention)
-  const name = sanitize(document.getElementById('name').value.trim());
+  // Get form data — stored raw, sanitization happens at render time (OWASP best practice)
+  const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
-  const message = sanitize(document.getElementById('message').value.trim());
+  const message = document.getElementById('message').value.trim();
 
   // Validation
   if (!name || !email || !message) {
@@ -244,11 +244,11 @@ form.addEventListener('submit', async (e) => {
   formStatus.className = 'form-status';
 
   try {
+    // Don't send status — enforced by DB default + RLS policy
     await supabase.insert('messages', {
       name: name,
       email: email,
-      message: message,
-      status: 'pending'
+      message: message
     });
 
     recordSubmission();
