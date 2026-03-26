@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://bxrpppfiplqddcuzmfnq.supabase.co; img-src 'self' data:; font-src 'self';">
   <title>CJ Carito — Builder of Things That Should Exist</title>
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
 
@@ -27,8 +27,14 @@
 
   <!-- Announcement Banner (controlled via Telegram) -->
   <div id="announce-banner" class="announce-banner" style="display:none;">
-    <span id="announce-text"></span>
-    <button id="announce-close" class="announce-close" aria-label="Close">&times;</button>
+    <div class="announce-glow"></div>
+    <div class="announce-content">
+      <span class="announce-icon">&#9889;</span>
+      <span id="announce-text" class="announce-text"></span>
+    </div>
+    <button id="announce-close" class="announce-close" aria-label="Close">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
   </div>
 
   <!-- Hero Section -->
@@ -222,6 +228,6 @@
     </div>
   </footer>
 
-  <script src="js/app.js?v=5"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>
