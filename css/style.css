@@ -1420,6 +1420,37 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ========== Projects Empty State ========== */
+.projects-empty {
+  display: none;
+  text-align: center;
+  padding: 4rem 2rem;
+  animation: fadeInUp 0.5s ease;
+}
+
+.projects-empty.visible {
+  display: block;
+}
+
+.projects-empty p {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.projects-empty .projects-empty-sub {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.projects-restore {
+  font-size: 0.8rem;
+  padding: 0.5rem 1.4rem;
+}
+
 /* ========== Terminal Row ========== */
 .terminal-row {
   margin-top: 1.25rem;

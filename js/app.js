@@ -828,6 +828,7 @@ function setupTrafficLights(dotsContainer, target) {
     e.stopPropagation();
     target.classList.remove('minimized');
     target.classList.add('closed');
+    setTimeout(checkAllClosed, 400);
   });
 
   yellow.addEventListener('click', (e) => {
@@ -845,6 +846,7 @@ function setupTrafficLights(dotsContainer, target) {
     e.stopPropagation();
     target.classList.remove('minimized');
     target.classList.remove('closed');
+    checkAllClosed();
   });
 }
 
@@ -861,3 +863,32 @@ const terminalEl = document.querySelector('.terminal');
 if (terminalDots && terminalEl) {
   setupTrafficLights(terminalDots, terminalEl);
 }
+
+// Check if all project items are closed
+function checkAllClosed() {
+  const cards = document.querySelectorAll('.project-card');
+  const grid = document.querySelector('.projects-grid');
+  const tRow = document.querySelector('.terminal-row');
+  const empty = document.getElementById('projects-empty');
+  const allCardsClosed = Array.from(cards).every(c => c.classList.contains('closed'));
+  const termClosed = terminalEl && terminalEl.classList.contains('closed');
+
+  if (allCardsClosed && termClosed) {
+    grid.style.display = 'none';
+    tRow.style.display = 'none';
+    empty.classList.add('visible');
+  } else {
+    grid.style.display = '';
+    tRow.style.display = '';
+    empty.classList.remove('visible');
+  }
+}
+
+// Restore All button
+document.getElementById('projects-restore').addEventListener('click', () => {
+  document.querySelectorAll('.project-card').forEach(c => {
+    c.classList.remove('closed', 'minimized');
+  });
+  if (terminalEl) terminalEl.classList.remove('closed', 'minimized');
+  checkAllClosed();
+});
