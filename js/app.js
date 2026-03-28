@@ -335,7 +335,10 @@ function showPipeline(messageId, userEmail) {
   `;
 
   form.style.display = 'none';
-  form.parentNode.insertBefore(pipeline, form.nextSibling);
+  const cpBody = form.closest('.cp-body') || form.parentNode;
+  const cpSubtitle = cpBody.querySelector('.cp-subtitle');
+  if (cpSubtitle) cpSubtitle.style.display = 'none';
+  cpBody.appendChild(pipeline);
   setTimeout(() => pipeline.classList.add('visible'), 50);
 
   // Step 0 activates immediately — message is already in the database
@@ -736,11 +739,60 @@ const terminalCommands = {
   } catch { /* silent */ }
 })();
 
+// ========== Contact Panel Toggle ==========
+const contactPanel = document.getElementById('contact-panel');
+const statusWidget = document.getElementById('status-widget');
+const cpClose = document.getElementById('cp-close');
+
+function toggleContactPanel(forceOpen) {
+  const isOpen = contactPanel.classList.contains('open');
+  if (forceOpen === true && isOpen) return;
+  if (forceOpen === false && !isOpen) return;
+
+  contactPanel.classList.toggle('open');
+  statusWidget.classList.toggle('panel-open');
+}
+
+statusWidget.addEventListener('click', () => toggleContactPanel());
+cpClose.addEventListener('click', () => toggleContactPanel(false));
+
+// Close panel on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && contactPanel.classList.contains('open')) {
+    toggleContactPanel(false);
+  }
+});
+
+// Close panel when clicking outside
+document.addEventListener('click', (e) => {
+  if (contactPanel.classList.contains('open') &&
+      !contactPanel.contains(e.target) &&
+      !statusWidget.contains(e.target)) {
+    toggleContactPanel(false);
+  }
+});
+
 // ========== Smooth Scroll for Nav Links ==========
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function (e) {
+    const href = this.getAttribute('href');
+
+    // Contact link toggles the panel instead of scrolling
+    if (href === '#contact') {
+      e.preventDefault();
+      toggleContactPanel(true);
+      // Close mobile nav if open
+      const navLinks = document.getElementById('nav-links');
+      const navToggle = document.getElementById('nav-toggle');
+      if (navLinks && navLinks.classList.contains('open')) {
+        navLinks.classList.remove('open');
+        navToggle.classList.remove('open');
+      }
+      return;
+    }
+
     e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
+    const target = document.querySelector(href);
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }

@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://bxrpppfiplqddcuzmfnq.supabase.co https://api.github.com; img-src 'self' data:; font-src 'self';">
   <title>CJ Carito — Builder of Things That Should Exist</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="css/style.css?v=11">
+  <link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
 
@@ -232,13 +232,20 @@
     </div>
   </section>
 
-  <!-- Contact Section -->
-  <section id="contact" class="section">
-    <div class="container">
-      <h2 class="section-title reveal">Let's Talk</h2>
-      <p class="section-subtitle reveal">Have an idea, a question, or just want to say hi? Send me a message.</p>
-
-      <form id="contact-form" class="contact-form reveal" autocomplete="off">
+  <!-- Contact Panel (expandable from status widget) -->
+  <div class="contact-panel" id="contact-panel">
+    <div class="cp-header">
+      <div class="cp-title">
+        <div class="sw-pulse"></div>
+        <span>Let's Talk</span>
+      </div>
+      <button class="cp-close" id="cp-close" aria-label="Close contact panel">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="cp-body">
+      <p class="cp-subtitle">Have an idea, a question, or just want to say hi?</p>
+      <form id="contact-form" class="cp-form" autocomplete="off">
         <!-- Honeypot — invisible to humans, bots fill it -->
         <div class="form-hp" aria-hidden="true" tabindex="-1" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;overflow:hidden;">
           <label for="website">Website</label>
@@ -255,7 +262,7 @@
         </div>
         <div class="form-group">
           <label for="message">Message</label>
-          <textarea id="message" name="message" rows="5" required placeholder="What's on your mind?" maxlength="2000"></textarea>
+          <textarea id="message" name="message" rows="3" required placeholder="What's on your mind?" maxlength="2000"></textarea>
           <span class="char-count" id="char-count">0 / 2000</span>
         </div>
         <button type="submit" class="btn-primary btn-submit" id="submit-btn">
@@ -265,9 +272,9 @@
         <div id="form-status" class="form-status"></div>
       </form>
     </div>
-  </section>
+  </div>
 
-  <!-- Status Widget -->
+  <!-- Status Widget (toggles contact panel) -->
   <div class="status-widget" id="status-widget">
     <div class="sw-pulse"></div>
     <span class="sw-text">System Online</span>
@@ -285,6 +292,6 @@
     </div>
   </footer>
 
-  <script src="js/app.js?v=11"></script>
+  <script src="js/app.js?v=12"></script>
 </body>
 </html>
