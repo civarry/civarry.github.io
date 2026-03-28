@@ -69,7 +69,7 @@ const phrases = [
   'AI applications.',
   'things that should exist.',
   'solutions to problems I hate.',
-  'open-source libraries.',
+  'data-driven solutions.',
   'cross-platform apps.',
 ];
 
