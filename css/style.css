@@ -622,16 +622,34 @@ body {
   cursor: pointer;
   transition: opacity 0.15s, transform 0.15s;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wdot svg {
+  width: 6px;
+  height: 6px;
+  opacity: 0;
+  transition: opacity 0.1s;
+  stroke-width: 1.5;
+}
+
+.window-bar:hover .wdot svg {
+  opacity: 1;
 }
 
 .wdot:hover {
-  opacity: 0.85;
   transform: scale(1.15);
 }
 
 .wdot-red { background: #ff5f57; }
 .wdot-yellow { background: #febc2e; }
 .wdot-green { background: #28c840; }
+
+.wdot-red svg { stroke: #4a0002; }
+.wdot-yellow svg { stroke: #5a3a00; }
+.wdot-green svg { stroke: #0a4a00; }
 
 /* Card content wrapper */
 .project-card > * {
