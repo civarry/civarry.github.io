@@ -287,11 +287,11 @@ form.addEventListener('submit', async (e) => {
 
 // ========== Pipeline Visualization ==========
 const PIPELINE_STEPS = [
-  { key: 'received', icon: '&#xe876;', label: 'Message Received', desc: 'Saved to database' },
-  { key: 'ai_drafting', icon: '&#xe8b8;', label: 'AI Analyzing', desc: 'Reading your message' },
-  { key: 'notifying', icon: '&#xe0b7;', label: 'CJ Notified', desc: 'Sent to Telegram' },
-  { key: 'sending_reply', icon: '&#xe163;', label: 'Sending Reply', desc: 'Drafting your email' },
-  { key: 'replied', icon: '&#xe86c;', label: 'Reply Sent', desc: 'Check your inbox' }
+  { key: 'received', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', label: 'Message Received', desc: 'Saved to database' },
+  { key: 'ai_drafting', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 0-4 4c0 2 1 3.5 2 4.5L4 17v2h16v-2l-6-6.5c1-1 2-2.5 2-4.5a4 4 0 0 0-4-4z"/><circle cx="12" cy="6" r="1"/></svg>', label: 'AI Analyzing', desc: 'Reading your message' },
+  { key: 'notifying', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>', label: 'CJ Notified', desc: 'Sent to Telegram' },
+  { key: 'sending_reply', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7L13.03 12.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>', label: 'Sending Reply', desc: 'Drafting your email' },
+  { key: 'replied', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>', label: 'Reply Sent', desc: 'Check your inbox' }
 ];
 
 const STATUS_ORDER = ['pending', 'received', 'ai_drafting', 'notifying', 'sending_reply', 'replied', 'done'];
@@ -324,7 +324,7 @@ function showPipeline(messageId, userEmail) {
             <span class="step-desc">${step.desc}</span>
           </div>
           <div class="step-status">
-            <span class="step-check">&#xe86c;</span>
+            <svg class="step-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
         </div>
       `).join('')}

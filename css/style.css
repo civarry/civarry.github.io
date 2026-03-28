@@ -888,7 +888,6 @@ body {
 }
 
 /* ========== Pipeline Visualization ========== */
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 .pipeline {
   max-width: 520px;
@@ -1034,14 +1033,11 @@ body {
 }
 
 .step-icon {
-  font-family: 'Material Icons';
-  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-secondary);
   transition: color 0.3s ease;
-  font-style: normal;
-  font-weight: normal;
-  -webkit-font-feature-settings: 'liga';
-  font-feature-settings: 'liga';
 }
 
 .pipeline-step.active .step-icon {
@@ -1080,14 +1076,9 @@ body {
 }
 
 .step-check {
-  font-family: 'Material Icons';
-  font-size: 18px;
   color: transparent;
   transition: color 0.3s ease;
-  font-style: normal;
-  font-weight: normal;
-  -webkit-font-feature-settings: 'liga';
-  font-feature-settings: 'liga';
+  display: flex;
 }
 
 .pipeline-step.completed .step-check {
