@@ -6,7 +6,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://bxrpppfiplqddcuzmfnq.supabase.co https://api.github.com; img-src 'self' data:; font-src 'self';">
   <title>CJ Carito — Builder of Things That Should Exist</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="css/style.css?v=12">
+  <link rel="stylesheet" href="css/style.css?v=13">
 </head>
 <body>
 
@@ -103,33 +103,6 @@
     </div>
   </section>
 
-  <!-- Terminal Section -->
-  <section id="terminal-section" class="section section-alt">
-    <div class="container">
-      <h2 class="section-title reveal">Explore</h2>
-      <p class="section-subtitle reveal">An interactive look under the hood. Type <code>help</code> to start.</p>
-      <div class="terminal reveal">
-        <div class="terminal-header">
-          <div class="terminal-dots">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
-          </div>
-          <span class="terminal-title">visitor@cj.dev</span>
-        </div>
-        <div class="terminal-body" id="terminal-body">
-          <div id="terminal-output">
-            <div class="terminal-line">Welcome. Type <span class="t-cmd">help</span> to see available commands.</div>
-          </div>
-          <div class="terminal-input-line">
-            <span class="terminal-prompt">$</span>
-            <input type="text" id="terminal-input" class="terminal-input" autocomplete="off" spellcheck="false" placeholder="type a command...">
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- Projects Section -->
   <section id="projects" class="section section-alt">
     <div class="container">
@@ -208,26 +181,49 @@
         </a>
 
       </div>
-    </div>
-  </section>
 
-  <!-- GitHub Activity Section -->
-  <section id="github" class="section">
-    <div class="container">
-      <h2 class="section-title reveal">GitHub Activity</h2>
-      <p class="section-subtitle reveal">What I've been building lately.</p>
-      <div class="gh-container reveal">
-        <div class="gh-grid" id="gh-grid"></div>
-        <div class="gh-legend">
-          <span>Less</span>
-          <div class="gh-box gh-level-0"></div>
-          <div class="gh-box gh-level-1"></div>
-          <div class="gh-box gh-level-2"></div>
-          <div class="gh-box gh-level-3"></div>
-          <div class="gh-box gh-level-4"></div>
-          <span>More</span>
+      <!-- Terminal + GitHub Activity side by side -->
+      <div class="explore-row reveal">
+        <div class="explore-terminal">
+          <div class="terminal">
+            <div class="terminal-header">
+              <div class="terminal-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <span class="terminal-title">visitor@cj.dev — type <code>help</code></span>
+            </div>
+            <div class="terminal-body" id="terminal-body">
+              <div id="terminal-output">
+                <div class="terminal-line">Welcome. Type <span class="t-cmd">help</span> to see available commands.</div>
+              </div>
+              <div class="terminal-input-line">
+                <span class="terminal-prompt">$</span>
+                <input type="text" id="terminal-input" class="terminal-input" autocomplete="off" spellcheck="false" placeholder="type a command...">
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="gh-stats" id="gh-stats"></div>
+        <div class="explore-github">
+          <div class="gh-panel">
+            <div class="gh-panel-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              <span>GitHub Activity</span>
+            </div>
+            <div class="gh-grid" id="gh-grid"></div>
+            <div class="gh-legend">
+              <span>Less</span>
+              <div class="gh-box gh-level-0"></div>
+              <div class="gh-box gh-level-1"></div>
+              <div class="gh-box gh-level-2"></div>
+              <div class="gh-box gh-level-3"></div>
+              <div class="gh-box gh-level-4"></div>
+              <span>More</span>
+            </div>
+            <div class="gh-stats" id="gh-stats"></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -295,6 +291,6 @@
     </div>
   </footer>
 
-  <script src="js/app.js?v=12"></script>
+  <script src="js/app.js?v=13"></script>
 </body>
 </html>
