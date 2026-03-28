@@ -887,6 +887,191 @@ function checkAllClosed() {
   }
 }
 
+// ========== Snake Easter Egg ==========
+(function initSnakeEasterEgg() {
+  const card = document.querySelector('.gh-card');
+  if (!card) return;
+
+  const grid = document.getElementById('gh-grid');
+  const legend = card.querySelector('.gh-legend');
+  const stats = document.getElementById('gh-stats');
+  const headerText = card.querySelector('.gh-panel-header span');
+  if (!grid) return;
+
+  const ROWS = 7;
+  const TICK_MS = 170;
+  const CLICKS_NEEDED = 5;
+  const CLICK_WINDOW = 2000;
+
+  let clickTimes = [];
+  let gameActive = false;
+
+  card.addEventListener('click', function (e) {
+    if (gameActive) return;
+    if (e.target.closest('.window-bar')) return;
+
+    const now = Date.now();
+    clickTimes.push(now);
+    clickTimes = clickTimes.filter(t => now - t < CLICK_WINDOW);
+    if (clickTimes.length >= CLICKS_NEEDED) {
+      clickTimes = [];
+      startGame();
+    }
+  });
+
+  function startGame() {
+    const cells = Array.from(grid.querySelectorAll('.gh-cell'));
+    if (cells.length < ROWS) return;
+
+    const totalCells = cells.length;
+    const COLS = totalCells / ROWS;
+    if (COLS !== Math.floor(COLS)) return;
+
+    gameActive = true;
+
+    // Save original state
+    const originalLevels = cells.map(function (c) {
+      for (let l = 4; l >= 0; l--) {
+        if (c.classList.contains('gh-level-' + l)) return l;
+      }
+      return 0;
+    });
+    const originalStats = stats ? stats.innerHTML : '';
+    const originalHeader = headerText ? headerText.textContent : '';
+
+    // col-major index (grid-auto-flow: column)
+    const idx = function (col, row) { return col * ROWS + row; };
+
+    // Count food (green cells)
+    let foodTotal = 0;
+    for (let i = 0; i < totalCells; i++) {
+      if (originalLevels[i] > 0) foodTotal++;
+    }
+
+    // Start on an empty cell near left
+    let sc = 1, sr = 3;
+    if (originalLevels[idx(sc, sr)] > 0) {
+      for (let c = 0; c < COLS; c++) {
+        let found = false;
+        for (let r = 0; r < ROWS; r++) {
+          if (originalLevels[idx(c, r)] === 0) { sc = c; sr = r; found = true; break; }
+        }
+        if (found) break;
+      }
+    }
+
+    let snake = [{ c: sc, r: sr }];
+    let dir = { c: 1, r: 0 };
+    let nextDir = { c: 1, r: 0 };
+    let score = 0;
+    let eaten = new Set();
+
+    // Update UI
+    if (headerText) headerText.textContent = 'Snake';
+    if (legend) legend.style.display = 'none';
+    if (stats) stats.innerHTML =
+      '<span class="gh-snake-status">' +
+        '<span class="gh-snake-score">0</span> / ' + foodTotal + ' eaten — arrow keys to play' +
+      '</span>';
+
+    grid.classList.add('gh-snake-active');
+    render();
+
+    function onKey(e) {
+      switch (e.key) {
+        case 'ArrowUp': case 'w': if (dir.r !== 1) nextDir = { c: 0, r: -1 }; break;
+        case 'ArrowDown': case 's': if (dir.r !== -1) nextDir = { c: 0, r: 1 }; break;
+        case 'ArrowLeft': case 'a': if (dir.c !== 1) nextDir = { c: -1, r: 0 }; break;
+        case 'ArrowRight': case 'd': if (dir.c !== -1) nextDir = { c: 1, r: 0 }; break;
+        default: return;
+      }
+      e.preventDefault();
+    }
+    document.addEventListener('keydown', onKey);
+
+    const interval = setInterval(tick, TICK_MS);
+
+    function tick() {
+      dir = { c: nextDir.c, r: nextDir.r };
+      const head = snake[snake.length - 1];
+      const nh = {
+        c: (head.c + dir.c + COLS) % COLS,
+        r: (head.r + dir.r + ROWS) % ROWS
+      };
+
+      // Self collision
+      if (snake.some(function (s) { return s.c === nh.c && s.r === nh.r; })) {
+        endGame(false);
+        return;
+      }
+
+      snake.push(nh);
+
+      const ci = idx(nh.c, nh.r);
+      if (originalLevels[ci] > 0 && !eaten.has(ci)) {
+        eaten.add(ci);
+        score++;
+        const scoreEl = card.querySelector('.gh-snake-score');
+        if (scoreEl) scoreEl.textContent = score;
+        if (score >= foodTotal) { endGame(true); return; }
+      } else {
+        snake.shift();
+      }
+
+      render();
+    }
+
+    function render() {
+      for (let i = 0; i < totalCells; i++) {
+        cells[i].classList.remove('gh-snake-head', 'gh-snake-body');
+        if (eaten.has(i)) {
+          cells[i].className = cells[i].className.replace(/gh-level-\d/, 'gh-level-0');
+        }
+      }
+      for (let i = 0; i < snake.length; i++) {
+        const ci = idx(snake[i].c, snake[i].r);
+        cells[ci].classList.add(i === snake.length - 1 ? 'gh-snake-head' : 'gh-snake-body');
+      }
+    }
+
+    function endGame(won) {
+      clearInterval(interval);
+      document.removeEventListener('keydown', onKey);
+
+      if (won) {
+        // Victory flash — all cells turn green briefly
+        for (let i = 0; i < totalCells; i++) {
+          cells[i].classList.remove('gh-snake-head', 'gh-snake-body');
+          cells[i].classList.add('gh-snake-body');
+        }
+      } else {
+        // Flash head red on death
+        const hi = idx(snake[snake.length - 1].c, snake[snake.length - 1].r);
+        cells[hi].classList.add('gh-snake-dead');
+      }
+
+      if (stats) {
+        stats.innerHTML = won
+          ? '<span class="gh-snake-status">All commits devoured!</span>'
+          : '<span class="gh-snake-status">Game over — ' + score + ' / ' + foodTotal + ' eaten</span>';
+      }
+
+      // Restore after delay
+      setTimeout(function () {
+        for (let i = 0; i < totalCells; i++) {
+          cells[i].classList.remove('gh-snake-head', 'gh-snake-body', 'gh-snake-dead');
+          cells[i].className = cells[i].className.replace(/gh-level-\d/, 'gh-level-' + originalLevels[i]);
+        }
+        grid.classList.remove('gh-snake-active');
+        if (legend) legend.style.display = '';
+        if (stats) stats.innerHTML = originalStats;
+        if (headerText) headerText.textContent = originalHeader;
+        gameActive = false;
+      }, 3000);
+    }
+  }
+})();
+
 // Restore All button
 document.getElementById('projects-restore').addEventListener('click', () => {
   document.querySelectorAll('.project-card').forEach(c => {

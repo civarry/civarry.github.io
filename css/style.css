@@ -1686,6 +1686,31 @@ body.light-mode .section-alt {
   font-weight: 600;
 }
 
+/* ========== Snake Easter Egg ========== */
+.gh-snake-active .gh-cell:hover {
+  transform: none;
+  outline: none;
+}
+.gh-snake-head {
+  background: #ffffff !important;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+.gh-snake-body {
+  background: #39d353 !important;
+}
+.gh-snake-dead {
+  background: #f87171 !important;
+  box-shadow: 0 0 6px rgba(248, 113, 113, 0.6);
+}
+.gh-snake-status {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+.gh-snake-score {
+  color: #39d353;
+  font-weight: 600;
+}
+
 /* ========== Status Widget ========== */
 .status-widget {
   position: fixed;
