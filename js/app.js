@@ -817,31 +817,47 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // ========== Window Traffic Light Controls ==========
-document.querySelectorAll('.window-bar').forEach(bar => {
-  const card = bar.closest('.project-card');
-  if (!card) return;
+function setupTrafficLights(dotsContainer, target) {
+  const red = dotsContainer.querySelector('.wdot-red');
+  const yellow = dotsContainer.querySelector('.wdot-yellow');
+  const green = dotsContainer.querySelector('.wdot-green');
+  if (!red || !yellow || !green) return;
 
-  bar.querySelector('.wdot-red').addEventListener('click', (e) => {
+  red.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    card.classList.remove('minimized');
-    card.classList.add('closed');
+    target.classList.remove('minimized');
+    target.classList.add('closed');
   });
 
-  bar.querySelector('.wdot-yellow').addEventListener('click', (e) => {
+  yellow.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (card.classList.contains('minimized')) {
-      card.classList.remove('minimized');
+    if (target.classList.contains('minimized')) {
+      target.classList.remove('minimized');
     } else {
-      card.classList.add('minimized');
+      target.classList.add('minimized');
     }
   });
 
-  bar.querySelector('.wdot-green').addEventListener('click', (e) => {
+  green.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    card.classList.remove('minimized');
-    card.classList.remove('closed');
+    target.classList.remove('minimized');
+    target.classList.remove('closed');
   });
+}
+
+// Project cards
+document.querySelectorAll('.window-bar').forEach(bar => {
+  const card = bar.closest('.project-card');
+  if (!card) return;
+  setupTrafficLights(bar, card);
 });
+
+// Terminal
+const terminalDots = document.querySelector('.terminal-dots');
+const terminalEl = document.querySelector('.terminal');
+if (terminalDots && terminalEl) {
+  setupTrafficLights(terminalDots, terminalEl);
+}

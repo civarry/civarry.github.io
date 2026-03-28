@@ -1445,14 +1445,38 @@ body {
   display: flex;
   gap: 8px;
 }
-.terminal-dots .dot {
+
+.terminal-dots:hover .wdot svg {
+  opacity: 1;
+}
+
+.terminal.minimized {
+  height: auto;
+}
+
+.terminal.minimized .terminal-body {
+  display: none;
+}
+
+.terminal.closed {
+  transform: scale(0.95);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  border: none;
+  pointer-events: none;
+  margin: 0;
+  box-shadow: none;
+}
+.terminal-dots .wdot {
   width: 12px;
   height: 12px;
-  border-radius: 50%;
 }
-.dot-red { background: #ff5f57; }
-.dot-yellow { background: #febc2e; }
-.dot-green { background: #28c840; }
+
+.terminal-dots .wdot svg {
+  width: 7px;
+  height: 7px;
+}
 .terminal-title {
   color: #555;
   font-size: 0.75rem;
