@@ -767,7 +767,8 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('click', (e) => {
   if (contactPanel.classList.contains('open') &&
       !contactPanel.contains(e.target) &&
-      !statusWidget.contains(e.target)) {
+      !statusWidget.contains(e.target) &&
+      !e.target.closest('a[href="#contact"]')) {
     toggleContactPanel(false);
   }
 });
