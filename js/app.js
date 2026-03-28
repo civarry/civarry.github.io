@@ -288,14 +288,13 @@ form.addEventListener('submit', async (e) => {
 // ========== Pipeline Visualization ==========
 const PIPELINE_STEPS = [
   { key: 'received', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>', label: 'Message Received', desc: 'Saved to database' },
-  { key: 'ai_drafting', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 0-4 4c0 2 1 3.5 2 4.5L4 17v2h16v-2l-6-6.5c1-1 2-2.5 2-4.5a4 4 0 0 0-4-4z"/><circle cx="12" cy="6" r="1"/></svg>', label: 'AI Analyzing', desc: 'Reading your message' },
+  { key: 'ai_drafting', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 0-4 4c0 2 1 3.5 2 4.5L4 17v2h16v-2l-6-6.5c1-1 2-2.5 2-4.5a4 4 0 0 0-4-4z"/><circle cx="12" cy="6" r="1"/></svg>', label: 'AI Analyzing', desc: 'Crafting a personalized response' },
   { key: 'notifying', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>', label: 'CJ Notified', desc: 'Sent to Telegram' },
-  { key: 'sending_reply', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7L13.03 12.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>', label: 'Sending Reply', desc: 'Drafting your email' },
-  { key: 'replied', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>', label: 'Reply Sent', desc: 'Check your inbox' }
+  { key: 'done', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>', label: 'Reply Queued', desc: 'CJ will review and reply personally' }
 ];
 
 // Maps backend status → pipeline step index
-const STATUS_MAP = { received: 0, ai_drafting: 1, notifying: 2, sending_reply: 3, replied: 4, done: 4 };
+const STATUS_MAP = { received: 0, ai_drafting: 1, notifying: 2, done: 3, replied: 3 };
 const MIN_STEP_DELAY = 1500; // minimum 1.5s between step animations
 
 function showPipeline(messageId, userEmail) {
@@ -331,7 +330,7 @@ function showPipeline(messageId, userEmail) {
       `).join('')}
     </div>
     <div class="pipeline-footer" style="display:none;">
-      <p>A personalized reply has been sent to <strong>${sanitize(userEmail)}</strong></p>
+      <p>CJ will review your message and reply to <strong>${sanitize(userEmail)}</strong></p>
     </div>
   `;
 
@@ -343,7 +342,6 @@ function showPipeline(messageId, userEmail) {
   let animatedStep = -1;
   let targetStep = 0;
   let finished = false;
-  let finalStatus = null;
 
   // Animate: advances one step at a time with minimum delay
   function animateNext() {
@@ -363,9 +361,9 @@ function showPipeline(messageId, userEmail) {
       const footer = pipeline.querySelector('.pipeline-footer');
       const header = pipeline.querySelector('.pipeline-header p');
       setTimeout(() => {
-        header.textContent = finalStatus === 'replied' ? 'All done!' : 'Message processed!';
+        header.textContent = 'All done!';
         pipeline.querySelector('.pipeline-icon-pulse').classList.add('complete');
-        if (finalStatus === 'replied') footer.style.display = 'block';
+        footer.style.display = 'block';
       }, 800);
     } else {
       setTimeout(animateNext, MIN_STEP_DELAY);
@@ -382,8 +380,7 @@ function showPipeline(messageId, userEmail) {
     const step = STATUS_MAP[status];
     if (step !== undefined && step > targetStep) targetStep = step;
 
-    if (status === 'replied' || status === 'done') {
-      finalStatus = status;
+    if (status === 'done' || status === 'replied') {
       targetStep = PIPELINE_STEPS.length - 1;
       clearInterval(pollId);
     }
