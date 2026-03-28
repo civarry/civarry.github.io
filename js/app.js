@@ -688,57 +688,31 @@ const terminalCommands = {
   if (!grid) return;
 
   try {
-    const res = await fetch('https://api.github.com/users/civarry/events/public?per_page=100');
+    const res = await fetch('contributions.json');
     if (!res.ok) return;
-    const events = await res.json();
+    const data = await res.json();
 
-    // Count contributions per day
-    const counts = {};
-    let totalContribs = 0;
-    const repoSet = new Set();
+    // Show last 20 weeks of the contribution calendar
+    const displayWeeks = data.weeks.slice(-20);
 
-    events.forEach(event => {
-      const date = event.created_at.split('T')[0];
-      const n = event.type === 'PushEvent' ? (event.payload?.commits?.length || 1) : 1;
-      counts[date] = (counts[date] || 0) + n;
-      totalContribs += n;
-      if (event.repo?.name) repoSet.add(event.repo.name);
-    });
-
-    // Build grid: 16 weeks
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const totalWeeks = 16;
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - ((totalWeeks - 1) * 7 + dayOfWeek));
-
-    for (let w = 0; w < totalWeeks; w++) {
-      for (let d = 0; d < 7; d++) {
-        const date = new Date(startDate);
-        date.setDate(startDate.getDate() + w * 7 + d);
-
+    displayWeeks.forEach(week => {
+      week.forEach(day => {
         const cell = document.createElement('div');
-        cell.className = 'gh-cell';
-
-        if (date <= today) {
-          const key = date.toISOString().split('T')[0];
-          const count = counts[key] || 0;
-          const level = count === 0 ? 0 : count <= 2 ? 1 : count <= 4 ? 2 : count <= 7 ? 3 : 4;
-          cell.classList.add('gh-level-' + level);
-          cell.title = `${key}: ${count} contribution${count !== 1 ? 's' : ''}`;
-        }
-
+        const count = day.count;
+        const level = count === 0 ? 0 : count <= 2 ? 1 : count <= 5 ? 2 : count <= 8 ? 3 : 4;
+        cell.className = `gh-cell gh-level-${level}`;
+        cell.title = `${day.date}: ${count} contribution${count !== 1 ? 's' : ''}`;
         grid.appendChild(cell);
-      }
-    }
+      });
+    });
 
     // Stats
     if (statsEl) {
-      const activeDays = Object.keys(counts).length;
+      const allDays = data.weeks.flat();
+      const activeDays = allDays.filter(d => d.count > 0).length;
       statsEl.innerHTML =
-        `<span><span class="gh-stat-val">${totalContribs}</span> contributions</span>` +
-        `<span><span class="gh-stat-val">${activeDays}</span> active days</span>` +
-        `<span><span class="gh-stat-val">${repoSet.size}</span> repos</span>`;
+        `<span><span class="gh-stat-val">${data.total}</span> contributions this year</span>` +
+        `<span><span class="gh-stat-val">${activeDays}</span> active days</span>`;
     }
   } catch { /* silent */ }
 })();

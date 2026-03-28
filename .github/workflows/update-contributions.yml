@@ -1,0 +1,38 @@
+name: Update GitHub Contributions
+
+on:
+  schedule:
+    - cron: '0 1 * * *' # Daily at 1 AM UTC (9 AM PHT)
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch contribution data
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          curl -sf -H "Authorization: bearer $GH_PAT" \
+            -H "Content-Type: application/json" \
+            -d '{"query":"query{user(login:\"civarry\"){contributionsCollection{contributionCalendar{totalContributions weeks{contributionDays{contributionCount date}}}}}}"}' \
+            https://api.github.com/graphql | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          cal = data['data']['user']['contributionsCollection']['contributionCalendar']
+          weeks = []
+          for w in cal['weeks']:
+              weeks.append([{'count': d['contributionCount'], 'date': d['date']} for d in w['contributionDays']])
+          json.dump({'total': cal['totalContributions'], 'weeks': weeks}, open('contributions.json', 'w'))
+          "
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add contributions.json
+          git diff --cached --quiet || (git commit -m "chore: update contribution data" && git push)
