@@ -50,7 +50,7 @@ const supabase = {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
+        'Prefer': 'return=representation'
       },
       body: JSON.stringify(data)
     });
@@ -59,7 +59,20 @@ const supabase = {
       throw new Error(`Failed to insert: ${response.statusText}`);
     }
 
-    return true;
+    const rows = await response.json();
+    return rows[0] || null;
+  },
+
+  async getStatus(id) {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/messages?id=eq.${id}&select=status`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+    if (!response.ok) return null;
+    const rows = await response.json();
+    return rows[0]?.status || null;
   }
 };
 
@@ -245,28 +258,137 @@ form.addEventListener('submit', async (e) => {
   formStatus.className = 'form-status';
 
   try {
-    // Don't send status — enforced by DB default + RLS policy
-    await supabase.insert('messages', {
+    const row = await supabase.insert('messages', {
       name: name,
       email: email,
       message: message
     });
 
     recordSubmission();
-
-    formStatus.textContent = 'Message sent! I\'ll get back to you soon.';
-    formStatus.className = 'form-status success';
     form.reset();
     if (charCount) charCount.textContent = '0 / 2000';
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
+
+    if (row && row.id) {
+      showPipeline(row.id, email);
+    } else {
+      formStatus.textContent = 'Message sent! I\'ll get back to you soon.';
+      formStatus.className = 'form-status success';
+    }
 
   } catch (error) {
     formStatus.textContent = 'Something went wrong. Please try again.';
     formStatus.className = 'form-status error';
+    submitBtn.disabled = false;
+    submitBtn.classList.remove('loading');
   }
-
-  submitBtn.disabled = false;
-  submitBtn.classList.remove('loading');
 });
+
+// ========== Pipeline Visualization ==========
+const PIPELINE_STEPS = [
+  { key: 'received', icon: '&#xe876;', label: 'Message Received', desc: 'Saved to database' },
+  { key: 'ai_drafting', icon: '&#xe8b8;', label: 'AI Analyzing', desc: 'Reading your message' },
+  { key: 'notifying', icon: '&#xe0b7;', label: 'CJ Notified', desc: 'Sent to Telegram' },
+  { key: 'sending_reply', icon: '&#xe163;', label: 'Sending Reply', desc: 'Drafting your email' },
+  { key: 'replied', icon: '&#xe86c;', label: 'Reply Sent', desc: 'Check your inbox' }
+];
+
+const STATUS_ORDER = ['pending', 'received', 'ai_drafting', 'notifying', 'sending_reply', 'replied', 'done'];
+
+function showPipeline(messageId, userEmail) {
+  const form = document.getElementById('contact-form');
+  const formStatus = document.getElementById('form-status');
+  formStatus.className = 'form-status';
+  formStatus.textContent = '';
+
+  const pipeline = document.createElement('div');
+  pipeline.className = 'pipeline';
+  pipeline.innerHTML = `
+    <div class="pipeline-header">
+      <div class="pipeline-icon-pulse"></div>
+      <h3>Processing Your Message</h3>
+      <p>Watch the magic happen in real-time</p>
+    </div>
+    <div class="pipeline-steps">
+      ${PIPELINE_STEPS.map((step, i) => `
+        <div class="pipeline-step" data-step="${step.key}" data-index="${i}">
+          <div class="step-connector"><div class="connector-fill"></div></div>
+          <div class="step-node">
+            <div class="step-icon-ring">
+              <span class="step-icon material-icons">${step.icon}</span>
+            </div>
+          </div>
+          <div class="step-content">
+            <span class="step-label">${step.label}</span>
+            <span class="step-desc">${step.desc}</span>
+          </div>
+          <div class="step-status">
+            <span class="step-check">&#xe86c;</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="pipeline-footer" style="display:none;">
+      <p>A personalized reply has been sent to <strong>${sanitize(userEmail)}</strong></p>
+    </div>
+  `;
+
+  form.style.display = 'none';
+  form.parentNode.insertBefore(pipeline, form.nextSibling);
+
+  setTimeout(() => pipeline.classList.add('visible'), 50);
+
+  let currentIndex = -1;
+
+  const pollStatus = setInterval(async () => {
+    const status = await supabase.getStatus(messageId);
+    if (!status) return;
+
+    const statusIndex = STATUS_ORDER.indexOf(status);
+    if (statusIndex <= currentIndex) return;
+
+    // Activate all steps up to current status
+    for (let i = currentIndex + 1; i <= Math.min(statusIndex - 1, PIPELINE_STEPS.length - 1); i++) {
+      activateStep(pipeline, i);
+    }
+    currentIndex = statusIndex - 1;
+
+    if (status === 'replied' || status === 'done') {
+      // Complete all remaining steps
+      for (let i = 0; i < PIPELINE_STEPS.length; i++) {
+        activateStep(pipeline, i);
+      }
+      clearInterval(pollStatus);
+
+      const footer = pipeline.querySelector('.pipeline-footer');
+      const header = pipeline.querySelector('.pipeline-header p');
+      setTimeout(() => {
+        header.textContent = status === 'replied' ? 'All done!' : 'Message processed!';
+        pipeline.querySelector('.pipeline-icon-pulse').classList.add('complete');
+        if (status === 'replied') footer.style.display = 'block';
+      }, 600);
+    }
+  }, 2000);
+
+  // Timeout after 60s
+  setTimeout(() => {
+    clearInterval(pollStatus);
+    const header = pipeline.querySelector('.pipeline-header p');
+    if (!header.textContent.includes('done')) {
+      header.textContent = 'This is taking longer than usual. You\'ll still get a reply via email.';
+    }
+  }, 60000);
+}
+
+function activateStep(pipeline, index) {
+  const step = pipeline.querySelector(`[data-index="${index}"]`);
+  if (!step || step.classList.contains('active')) return;
+  setTimeout(() => {
+    step.classList.add('active');
+    setTimeout(() => step.classList.add('completed'), 400);
+  }, index * 150);
+}
 
 // ========== Remote Control (Telegram → Supabase → Site) ==========
 let currentTheme = 'dark';
