@@ -491,62 +491,58 @@ body {
 .section-subtitle {
   text-align: center;
   color: var(--text-secondary);
-  margin-bottom: 3.5rem;
+  margin-bottom: 2.5rem;
   font-size: 1rem;
 }
 
-/* ========== About Grid ========== */
-.about-grid {
+/* ========== About Row ========== */
+.about-section {
+  padding: 4rem 2rem;
+}
+
+.about-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem;
-  margin-top: 3rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
 }
 
-.about-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+.about-item {
+  position: relative;
 }
 
-.about-card:hover {
-  border-color: var(--border-hover);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+.about-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -1rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
 }
 
-.card-icon-wrapper {
-  margin-bottom: 1.25rem;
-}
-
-.card-icon {
-  width: 40px;
-  height: 40px;
+.about-item-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: var(--accent-glow);
-  border-radius: 10px;
-  color: var(--accent);
-}
-
-.card-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.about-card h3 {
+  gap: 0.5rem;
   margin-bottom: 0.5rem;
-  font-size: 1.05rem;
-  font-weight: 600;
 }
 
-.about-card p {
+.about-icon {
+  font-size: 20px;
+  color: var(--accent);
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+}
+
+.about-item h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.about-item p {
   color: var(--text-secondary);
-  font-size: 0.875rem;
-  line-height: 1.6;
+  font-size: 0.8rem;
+  line-height: 1.55;
 }
 
 /* ========== Projects Grid ========== */
@@ -960,8 +956,13 @@ body {
     display: flex;
   }
 
-  .about-grid {
-    grid-template-columns: 1fr;
+  .about-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .about-item:not(:last-child)::after {
+    display: none;
   }
 
   .projects-grid {
@@ -987,6 +988,11 @@ body {
   .btn-outline,
   .btn-primary {
     text-align: center;
+  }
+
+  .about-row {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
 }
 
