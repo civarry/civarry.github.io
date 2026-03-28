@@ -591,9 +591,14 @@ const terminalCommands = {
     '<span class="t-dim">Or scroll down — the contact form has a cool pipeline viz.</span>'
   ],
   // Easter eggs
-  sudo: () => ['<span class="t-dim">Nice try. You don\'t have permission here.</span>'],
-  'rm -rf /': () => ['<span class="t-dim">Whoa. This is a portfolio, not a sandbox.</span>'],
+  sudo: (args) => {
+    if (!args) return ['Usage: sudo <command>', '<span class="t-dim">Password is required for sudo.</span>'];
+    return ['<span class="t-dim">[sudo] password for visitor: ******</span>', '<span class="t-dim">Sorry, try again.</span>'];
+  },
+  'rm -rf /': () => ['<span class="t-dim">Permission denied. Try with sudo.</span>'],
   'rm -rf': () => terminalCommands['rm -rf /'](),
+  'sudo rm -rf /': '__MELTDOWN__',
+  'sudo rm -rf': '__MELTDOWN__',
   hack: () => ['<span class="t-dim">Hack what? This runs on free tiers. There\'s nothing to steal.</span>'],
   exit: () => ['<span class="t-dim">You can\'t exit. You\'re in too deep. Type "help" instead.</span>'],
   ls: () => [
@@ -625,6 +630,116 @@ const terminalCommands = {
   vim: () => ['<span class="t-dim">You\'re stuck in vim. Just kidding. Type "help".</span>'],
   '': () => []
 };
+
+function meltdown(addLine, input, termBody) {
+  input.disabled = true;
+
+  const delay = (ms) => new Promise(r => setTimeout(r, ms));
+  const scroll = () => { termBody.scrollTop = termBody.scrollHeight; };
+  const type = (html, cls) => { addLine(html, cls); scroll(); };
+
+  // Sections to "delete"
+  const targets = [
+    { sel: '.hero', name: '/home/visitor/hero' },
+    { sel: '#about', name: '/home/visitor/about' },
+    { sel: '.projects-grid', name: '/home/visitor/projects' },
+    { sel: '.gh-card', name: '/home/visitor/github-activity' },
+    { sel: '.terminal-row', name: '/home/visitor/terminal' },
+    { sel: '.footer', name: '/home/visitor/footer' },
+    { sel: '.navbar', name: '/home/visitor/navbar' },
+  ];
+
+  (async function run() {
+    type('<span class="t-dim">[sudo] password for visitor: ******</span>');
+    await delay(600);
+    type('<span class="t-accent">authenticated.</span>');
+    await delay(400);
+    type('');
+    type('<span style="color:#f87171">rm: descending into \'/\'...</span>');
+    await delay(800);
+
+    // Create screen overlay for glitch effects
+    const overlay = document.createElement('div');
+    overlay.className = 'meltdown-overlay';
+    document.body.appendChild(overlay);
+
+    // Delete elements one by one
+    for (let i = 0; i < targets.length; i++) {
+      const t = targets[i];
+      const el = document.querySelector(t.sel);
+      await delay(400);
+      type('<span style="color:#f87171">rm: removing ' + t.name + '...</span>');
+
+      if (el) {
+        el.classList.add('meltdown-delete');
+        await delay(300);
+        el.style.display = 'none';
+        el.classList.remove('meltdown-delete');
+      }
+
+      // Flicker overlay occasionally
+      if (i % 2 === 0) {
+        overlay.classList.add('meltdown-flicker');
+        await delay(150);
+        overlay.classList.remove('meltdown-flicker');
+      }
+    }
+
+    await delay(500);
+    type('');
+    type('<span style="color:#f87171">rm: cannot remove \'/proc/self\': Operation not permitted</span>');
+    await delay(300);
+    type('<span style="color:#f87171">rm: cannot remove \'/sys/kernel\': Permission denied</span>');
+    await delay(400);
+    type('');
+    type('<span style="color:#fbbf24">WARNING: critical system files removed</span>');
+    await delay(600);
+
+    // Full screen glitch
+    overlay.classList.add('meltdown-glitch');
+    await delay(200);
+    overlay.classList.remove('meltdown-glitch');
+    await delay(100);
+    overlay.classList.add('meltdown-glitch');
+    await delay(150);
+    overlay.classList.remove('meltdown-glitch');
+
+    await delay(400);
+    type('<span style="color:#f87171">Segmentation fault (core dumped)</span>');
+    await delay(300);
+    type('<span style="color:#f87171">KERNEL PANIC - not syncing: Attempted to kill init!</span>');
+
+    // Black out
+    overlay.classList.add('meltdown-blackout');
+    await delay(2000);
+
+    // Restore everything
+    targets.forEach(function (t) {
+      const el = document.querySelector(t.sel);
+      if (el) el.style.display = '';
+    });
+
+    // Fade back in
+    overlay.classList.remove('meltdown-blackout');
+    overlay.classList.add('meltdown-restore');
+    await delay(800);
+
+    overlay.remove();
+
+    // Clear terminal and show aftermath message
+    const outputEl = document.getElementById('terminal-output');
+    if (outputEl) outputEl.innerHTML = '';
+    type('');
+    type('<span class="t-accent">System restored from backup.</span>');
+    type('');
+    type('<span class="t-dim">Nice try. Everything here runs on GitHub Pages.</span>');
+    type('<span class="t-dim">You can\'t kill what\'s already statically hosted.</span>');
+    type('');
+
+    input.disabled = false;
+    input.focus();
+  })();
+}
 
 (function initTerminal() {
   const input = document.getElementById('terminal-input');
@@ -660,6 +775,10 @@ const terminalCommands = {
     const args = parts.slice(1).join(' ');
 
     const handler = terminalCommands[trimmed.toLowerCase()] || terminalCommands[base];
+    if (handler === '__MELTDOWN__') {
+      meltdown(addLine, input, body);
+      return;
+    }
     if (handler) {
       const lines = typeof handler === 'function' ? handler(args) : handler;
       if (Array.isArray(lines)) lines.forEach(l => addLine(l));

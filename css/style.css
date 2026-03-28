@@ -1711,6 +1711,38 @@ body.light-mode .section-alt {
   font-weight: 600;
 }
 
+/* ========== Meltdown Easter Egg ========== */
+.meltdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+.meltdown-flicker {
+  background: rgba(248, 113, 113, 0.06);
+}
+.meltdown-glitch {
+  background: rgba(255, 255, 255, 0.15);
+}
+.meltdown-blackout {
+  background: #000;
+  pointer-events: all;
+  transition: background 0.4s ease;
+}
+.meltdown-restore {
+  background: transparent;
+  transition: background 0.8s ease;
+}
+.meltdown-delete {
+  animation: meltdownDelete 0.3s ease forwards;
+}
+@keyframes meltdownDelete {
+  0% { opacity: 1; transform: scale(1); filter: none; }
+  50% { opacity: 0.6; transform: scale(0.98); filter: blur(1px) saturate(0); }
+  100% { opacity: 0; transform: scale(0.95) translateY(10px); filter: blur(3px) saturate(0); }
+}
+
 /* ========== Status Widget ========== */
 .status-widget {
   position: fixed;
