@@ -1257,20 +1257,9 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ========== Explore Row (Terminal + GitHub side by side) ========== */
-.explore-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin-top: 2.5rem;
-}
-
-.explore-terminal {
-  min-width: 0;
-}
-
-.explore-github {
-  min-width: 0;
+/* ========== Terminal Row ========== */
+.terminal-row {
+  margin-top: 1.25rem;
 }
 
 /* ========== Interactive Terminal ========== */
@@ -1280,9 +1269,6 @@ body {
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.08);
   box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
 }
 .terminal-header {
   background: #1a1a1a;
@@ -1311,8 +1297,7 @@ body {
 }
 .terminal-body {
   padding: 16px;
-  flex: 1;
-  min-height: 280px;
+  height: 300px;
   overflow-y: auto;
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: 0.82rem;
@@ -1372,16 +1357,14 @@ body {
 }
 
 /* ========== GitHub Activity Grid ========== */
-.gh-panel {
-  background: #0a0a0a;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
-  padding: 20px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+.gh-card {
+  cursor: default;
   justify-content: center;
+}
+
+.gh-card:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .gh-panel-header {
@@ -1517,8 +1500,7 @@ body {
 }
 
 @media (max-width: 768px) {
-  .explore-row { grid-template-columns: 1fr; }
-  .terminal-body { min-height: 250px; font-size: 0.75rem; }
+  .terminal-body { height: 250px; font-size: 0.75rem; }
   .gh-grid { grid-template-rows: repeat(7, 10px); grid-auto-columns: 10px; gap: 2px; }
   .gh-cell { width: 10px; height: 10px; }
   .status-widget { bottom: 12px; right: 12px; font-size: 0.65rem; padding: 6px 10px; }
