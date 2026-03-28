@@ -723,6 +723,7 @@ const terminalCommands = {
 // ========== Status Widget ==========
 (async function initStatusWidget() {
   const stat = document.getElementById('sw-stat');
+  const cpStat = document.getElementById('cp-stat');
   if (!stat) return;
 
   try {
@@ -735,7 +736,11 @@ const terminalCommands = {
     });
     if (!res.ok) return;
     const total = res.headers.get('content-range')?.split('/')?.pop();
-    if (total) stat.textContent = `${total} messages processed`;
+    if (total) {
+      const text = `${total} messages processed`;
+      stat.textContent = text;
+      if (cpStat) cpStat.textContent = text;
+    }
   } catch { /* silent */ }
 })();
 
