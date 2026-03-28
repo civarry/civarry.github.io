@@ -294,7 +294,9 @@ const PIPELINE_STEPS = [
   { key: 'replied', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>', label: 'Reply Sent', desc: 'Check your inbox' }
 ];
 
-const STATUS_ORDER = ['pending', 'received', 'ai_drafting', 'notifying', 'sending_reply', 'replied', 'done'];
+// Maps backend status → pipeline step index
+const STATUS_MAP = { received: 0, ai_drafting: 1, notifying: 2, sending_reply: 3, replied: 4, done: 4 };
+const MIN_STEP_DELAY = 1500; // minimum 1.5s between step animations
 
 function showPipeline(messageId, userEmail) {
   const form = document.getElementById('contact-form');
@@ -313,10 +315,9 @@ function showPipeline(messageId, userEmail) {
     <div class="pipeline-steps">
       ${PIPELINE_STEPS.map((step, i) => `
         <div class="pipeline-step" data-step="${step.key}" data-index="${i}">
-          <div class="step-connector"><div class="connector-fill"></div></div>
           <div class="step-node">
             <div class="step-icon-ring">
-              <span class="step-icon material-icons">${step.icon}</span>
+              <span class="step-icon">${step.icon}</span>
             </div>
           </div>
           <div class="step-content">
@@ -336,58 +337,66 @@ function showPipeline(messageId, userEmail) {
 
   form.style.display = 'none';
   form.parentNode.insertBefore(pipeline, form.nextSibling);
-
   setTimeout(() => pipeline.classList.add('visible'), 50);
 
-  let currentIndex = -1;
+  // Step 0 activates immediately — message is already in the database
+  let animatedStep = -1;
+  let targetStep = 0;
+  let finished = false;
+  let finalStatus = null;
 
-  const pollStatus = setInterval(async () => {
-    const status = await supabase.getStatus(messageId);
-    if (!status) return;
-
-    const statusIndex = STATUS_ORDER.indexOf(status);
-    if (statusIndex <= currentIndex) return;
-
-    // Activate all steps up to current status
-    for (let i = currentIndex + 1; i <= Math.min(statusIndex - 1, PIPELINE_STEPS.length - 1); i++) {
-      activateStep(pipeline, i);
+  // Animate: advances one step at a time with minimum delay
+  function animateNext() {
+    if (animatedStep >= targetStep) {
+      if (!finished) setTimeout(animateNext, 500);
+      return;
     }
-    currentIndex = statusIndex - 1;
+    animatedStep++;
+    const step = pipeline.querySelector(`[data-index="${animatedStep}"]`);
+    if (step && !step.classList.contains('active')) {
+      step.classList.add('active');
+      setTimeout(() => step.classList.add('completed'), 500);
+    }
 
-    if (status === 'replied' || status === 'done') {
-      // Complete all remaining steps
-      for (let i = 0; i < PIPELINE_STEPS.length; i++) {
-        activateStep(pipeline, i);
-      }
-      clearInterval(pollStatus);
-
+    if (animatedStep >= PIPELINE_STEPS.length - 1) {
+      finished = true;
       const footer = pipeline.querySelector('.pipeline-footer');
       const header = pipeline.querySelector('.pipeline-header p');
       setTimeout(() => {
-        header.textContent = status === 'replied' ? 'All done!' : 'Message processed!';
+        header.textContent = finalStatus === 'replied' ? 'All done!' : 'Message processed!';
         pipeline.querySelector('.pipeline-icon-pulse').classList.add('complete');
-        if (status === 'replied') footer.style.display = 'block';
-      }, 600);
+        if (finalStatus === 'replied') footer.style.display = 'block';
+      }, 800);
+    } else {
+      setTimeout(animateNext, MIN_STEP_DELAY);
+    }
+  }
+
+  setTimeout(animateNext, 800);
+
+  // Poll: updates targetStep based on real backend status
+  const pollId = setInterval(async () => {
+    const status = await supabase.getStatus(messageId);
+    if (!status) return;
+
+    const step = STATUS_MAP[status];
+    if (step !== undefined && step > targetStep) targetStep = step;
+
+    if (status === 'replied' || status === 'done') {
+      finalStatus = status;
+      targetStep = PIPELINE_STEPS.length - 1;
+      clearInterval(pollId);
     }
   }, 2000);
 
-  // Timeout after 60s
+  // Timeout after 90s
   setTimeout(() => {
-    clearInterval(pollStatus);
-    const header = pipeline.querySelector('.pipeline-header p');
-    if (!header.textContent.includes('done')) {
-      header.textContent = 'This is taking longer than usual. You\'ll still get a reply via email.';
+    if (!finished) {
+      clearInterval(pollId);
+      const header = pipeline.querySelector('.pipeline-header p');
+      header.textContent = 'Taking longer than usual. You\'ll still get a reply via email.';
     }
-  }, 60000);
-}
-
-function activateStep(pipeline, index) {
-  const step = pipeline.querySelector(`[data-index="${index}"]`);
-  if (!step || step.classList.contains('active')) return;
-  setTimeout(() => {
-    step.classList.add('active');
-    setTimeout(() => step.classList.add('completed'), 400);
-  }, index * 150);
+  }, 90000);
 }
 
 // ========== Remote Control (Telegram → Supabase → Site) ==========
