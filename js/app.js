@@ -137,15 +137,26 @@ const revealObserver = new IntersectionObserver((entries) => {
 
 revealElements.forEach(el => revealObserver.observe(el));
 
-// ========== Navbar Scroll Effect ==========
+// ========== Navbar Scroll Effect (auto-hide on scroll down, show on scroll up) ==========
 const navbar = document.getElementById('navbar');
+let lastScrollY = 0;
 
 window.addEventListener('scroll', () => {
-  if (window.scrollY > 20) {
+  const currentY = window.scrollY;
+
+  if (currentY > 20) {
     navbar.classList.add('scrolled');
   } else {
     navbar.classList.remove('scrolled');
   }
+
+  if (currentY > lastScrollY && currentY > 80) {
+    navbar.classList.add('nav-hidden');
+  } else {
+    navbar.classList.remove('nav-hidden');
+  }
+
+  lastScrollY = currentY;
 }, { passive: true });
 
 // ========== Mobile Nav Toggle ==========
