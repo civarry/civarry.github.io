@@ -494,6 +494,274 @@ if (announceClose) {
 fetchSiteSettings();
 setInterval(fetchSiteSettings, 5000);
 
+// ========== Interactive Terminal ==========
+const terminalCommands = {
+  help: () => [
+    'Available commands:',
+    '',
+    '  <span class="t-cmd">about</span>       Who is CJ?',
+    '  <span class="t-cmd">skills</span>      Tech stack',
+    '  <span class="t-cmd">projects</span>    Things I\'ve built',
+    '  <span class="t-cmd">experience</span>  Work history',
+    '  <span class="t-cmd">education</span>   Academic background',
+    '  <span class="t-cmd">contact</span>     Get in touch',
+    '  <span class="t-cmd">clear</span>       Clear terminal',
+    '',
+    '<span class="t-dim">Try some hidden commands too...</span>'
+  ],
+  about: () => [
+    '<span class="t-accent">CJ Carito</span> (Christian Joy C. Carito)',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    'Data Scientist & Developer from Quezon City, PH.',
+    '',
+    'I find problems that annoy me, then build things to fix them.',
+    'Python-first, but I\'ll use whatever the problem needs.',
+    '',
+    '3+ years in tech — ML, LLMs, and building things that',
+    'probably shouldn\'t be running on free tiers.',
+  ],
+  whoami: () => terminalCommands.about(),
+  skills: () => [
+    '<span class="t-accent">Tech Stack</span>',
+    '━━━━━━━━━━━━━',
+    '',
+    '  Languages    Python, SQL, JavaScript, Dart',
+    '  Frameworks   Flask, Django, ReactJS, Streamlit, Flutter',
+    '  AI/ML        TensorFlow, Scikit-learn, LLMs, RAG, NLP',
+    '  Data         PySpark, Pandas, Databricks',
+    '  Backend      Supabase, GitHub Actions, REST APIs',
+    '  Tools        Git, Linux, Docker',
+    '',
+    '<span class="t-dim">If it solves the problem, I\'ll learn it.</span>'
+  ],
+  projects: () => [
+    '<span class="t-accent">Featured Projects</span>',
+    '━━━━━━━━━━━━━━━━━━━',
+    '',
+    '  UnFooled           Gamified critical thinking trainer (Flutter)',
+    '  Android File Xfer  macOS file manager over ADB (PyQt6)',
+    '  Payslip Auto       PDF payslips + bulk email (Streamlit)',
+    '  ReviewAI           AI question generator from docs (Flask)',
+    '  HTML Components    Bridges HTML/CSS/JS with Streamlit (PyPI)',
+    '',
+    '<span class="t-dim">Scroll down or type "contact" to discuss ideas.</span>'
+  ],
+  experience: () => [
+    '<span class="t-accent">Work Experience</span>',
+    '━━━━━━━━━━━━━━━━━',
+    '',
+    '  2025-present   Data Scientist',
+    '                 LLMs, RAG, cybersecurity, PySpark',
+    '',
+    '  2022-2025      Data Scientist @ Inchcape Digital',
+    '                 ML models, data pipelines, LLM tools',
+    '',
+    '<span class="t-dim">3+ years building ML models, data pipelines, and AI tools.</span>'
+  ],
+  work: () => terminalCommands.experience(),
+  education: () => [
+    '<span class="t-accent">Education</span>',
+    '━━━━━━━━━━━━',
+    '',
+    '  BS Computer Science',
+    '  Our Lady of Fatima University',
+    '  2019 - 2023'
+  ],
+  contact: () => [
+    '<span class="t-accent">Get In Touch</span>',
+    '━━━━━━━━━━━━━━',
+    '',
+    '  GitHub     github.com/civarry',
+    '  LinkedIn   linkedin.com/in/cccarito',
+    '',
+    '<span class="t-dim">Or scroll down — the contact form has a cool pipeline viz.</span>'
+  ],
+  // Easter eggs
+  sudo: () => ['<span class="t-dim">Nice try. You don\'t have permission here.</span>'],
+  'rm -rf /': () => ['<span class="t-dim">Whoa. This is a portfolio, not a sandbox.</span>'],
+  'rm -rf': () => terminalCommands['rm -rf /'](),
+  hack: () => ['<span class="t-dim">Hack what? This runs on free tiers. There\'s nothing to steal.</span>'],
+  exit: () => ['<span class="t-dim">You can\'t exit. You\'re in too deep. Type "help" instead.</span>'],
+  ls: () => [
+    'about.txt    skills.json    projects/',
+    'experience/  education.md   contact.yml',
+    '<span class="t-dim">secrets/     .env</span>           easter_eggs.sh'
+  ],
+  pwd: () => ['/home/visitor/cj-portfolio'],
+  date: () => [new Date().toLocaleString()],
+  echo: (args) => [args || ''],
+  ping: () => ['PONG! Site is alive and running on pure stubbornness.'],
+  coffee: () => ['Brewing... CJ runs on caffeine and deadlines.'],
+  neofetch: () => [
+    '        <span class="t-accent">cj@portfolio</span>',
+    '  ╭──╮  ──────────────',
+    '  │<span class="t-cmd">CJ</span>│  <span class="t-accent">OS:</span>     Free Tiers & Stubbornness',
+    '  ╰──╯  <span class="t-accent">Host:</span>   GitHub Pages',
+    '         <span class="t-accent">Shell:</span>  Python 3.x',
+    '         <span class="t-accent">CPU:</span>    Groq llama-3.1-8b',
+    '         <span class="t-accent">RAM:</span>    Supabase Free Tier',
+    '         <span class="t-accent">Uptime:</span> Somehow still running'
+  ],
+  cat: (args) => {
+    if (!args) return ['Usage: cat <filename>'];
+    if (args.includes('secret') || args.includes('.env'))
+      return ['<span class="t-dim">Permission denied. Nice try though.</span>'];
+    return ['<span class="t-dim">No such file. Try "ls" to see what\'s here.</span>'];
+  },
+  vim: () => ['<span class="t-dim">You\'re stuck in vim. Just kidding. Type "help".</span>'],
+  '': () => []
+};
+
+(function initTerminal() {
+  const input = document.getElementById('terminal-input');
+  const output = document.getElementById('terminal-output');
+  const body = document.getElementById('terminal-body');
+  if (!input || !output || !body) return;
+
+  const history = [];
+  let histIdx = -1;
+
+  function addLine(html, className) {
+    const line = document.createElement('div');
+    line.className = 'terminal-line' + (className ? ' ' + className : '');
+    line.innerHTML = html;
+    output.appendChild(line);
+  }
+
+  function runCommand(raw) {
+    const trimmed = raw.trim();
+    if (!trimmed) return;
+    history.unshift(trimmed);
+    histIdx = -1;
+
+    addLine(sanitize(trimmed), 't-command');
+
+    if (trimmed.toLowerCase() === 'clear') {
+      output.innerHTML = '';
+      return;
+    }
+
+    const parts = trimmed.toLowerCase().split(/\s+/);
+    const base = parts[0];
+    const args = parts.slice(1).join(' ');
+
+    const handler = terminalCommands[trimmed.toLowerCase()] || terminalCommands[base];
+    if (handler) {
+      const lines = typeof handler === 'function' ? handler(args) : handler;
+      if (Array.isArray(lines)) lines.forEach(l => addLine(l));
+    } else {
+      addLine(`command not found: ${sanitize(base)}. Type <span class="t-cmd">help</span> for available commands.`);
+    }
+
+    body.scrollTop = body.scrollHeight;
+  }
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      runCommand(input.value);
+      input.value = '';
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (histIdx < history.length - 1) {
+        histIdx++;
+        input.value = history[histIdx];
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (histIdx > 0) {
+        histIdx--;
+        input.value = history[histIdx];
+      } else {
+        histIdx = -1;
+        input.value = '';
+      }
+    }
+  });
+
+  document.querySelector('.terminal')?.addEventListener('click', () => input.focus());
+})();
+
+// ========== GitHub Activity Grid ==========
+(async function initGitHubGrid() {
+  const grid = document.getElementById('gh-grid');
+  const statsEl = document.getElementById('gh-stats');
+  if (!grid) return;
+
+  try {
+    const res = await fetch('https://api.github.com/users/civarry/events/public?per_page=100');
+    if (!res.ok) return;
+    const events = await res.json();
+
+    // Count contributions per day
+    const counts = {};
+    let totalContribs = 0;
+    const repoSet = new Set();
+
+    events.forEach(event => {
+      const date = event.created_at.split('T')[0];
+      const n = event.type === 'PushEvent' ? (event.payload?.commits?.length || 1) : 1;
+      counts[date] = (counts[date] || 0) + n;
+      totalContribs += n;
+      if (event.repo?.name) repoSet.add(event.repo.name);
+    });
+
+    // Build grid: 16 weeks
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const totalWeeks = 16;
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - ((totalWeeks - 1) * 7 + dayOfWeek));
+
+    for (let w = 0; w < totalWeeks; w++) {
+      for (let d = 0; d < 7; d++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + w * 7 + d);
+
+        const cell = document.createElement('div');
+        cell.className = 'gh-cell';
+
+        if (date <= today) {
+          const key = date.toISOString().split('T')[0];
+          const count = counts[key] || 0;
+          const level = count === 0 ? 0 : count <= 2 ? 1 : count <= 4 ? 2 : count <= 7 ? 3 : 4;
+          cell.classList.add('gh-level-' + level);
+          cell.title = `${key}: ${count} contribution${count !== 1 ? 's' : ''}`;
+        }
+
+        grid.appendChild(cell);
+      }
+    }
+
+    // Stats
+    if (statsEl) {
+      const activeDays = Object.keys(counts).length;
+      statsEl.innerHTML =
+        `<span><span class="gh-stat-val">${totalContribs}</span> contributions</span>` +
+        `<span><span class="gh-stat-val">${activeDays}</span> active days</span>` +
+        `<span><span class="gh-stat-val">${repoSet.size}</span> repos</span>`;
+    }
+  } catch { /* silent */ }
+})();
+
+// ========== Status Widget ==========
+(async function initStatusWidget() {
+  const stat = document.getElementById('sw-stat');
+  if (!stat) return;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/messages?select=id`, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'count=exact'
+      }
+    });
+    if (!res.ok) return;
+    const total = res.headers.get('content-range')?.split('/')?.pop();
+    if (total) stat.textContent = `${total} messages processed`;
+  } catch { /* silent */ }
+})();
+
 // ========== Smooth Scroll for Nav Links ==========
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function (e) {
