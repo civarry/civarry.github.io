@@ -604,26 +604,44 @@ body {
 }
 
 /* macOS window chrome */
-.project-card::before {
-  content: '';
-  display: block;
+.window-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   height: 36px;
+  padding: 0 12px;
   background: rgba(255, 255, 255, 0.02);
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  background-image: radial-gradient(circle at 16px 50%, #ff5f57 4px, transparent 4px),
-                     radial-gradient(circle at 32px 50%, #febc2e 4px, transparent 4px),
-                     radial-gradient(circle at 48px 50%, #28c840 4px, transparent 4px);
-  background-repeat: no-repeat;
   flex-shrink: 0;
 }
 
+.wdot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  position: relative;
+}
+
+.wdot:hover {
+  opacity: 0.85;
+  transform: scale(1.15);
+}
+
+.wdot-red { background: #ff5f57; }
+.wdot-yellow { background: #febc2e; }
+.wdot-green { background: #28c840; }
+
+/* Card content wrapper */
 .project-card > * {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
 }
 
-.project-card > *:first-child {
-  padding-top: 0;
+.project-card > .window-bar {
+  padding-left: 12px;
+  padding-right: 12px;
 }
 
 .project-card > .project-header {
@@ -632,6 +650,46 @@ body {
 
 .project-card > .project-tech {
   padding-bottom: 1.5rem;
+}
+
+/* Minimized state — collapse to title bar only */
+.project-card.minimized > *:not(.window-bar) {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.project-card.minimized {
+  overflow: hidden;
+}
+
+/* Closed state */
+.project-card.closed {
+  transform: scale(0.95);
+  opacity: 0;
+  max-height: 0 !important;
+  padding: 0;
+  margin: 0;
+  border: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Transition for minimize/close */
+.project-card > * {
+  transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              padding 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              margin 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.2s ease;
+}
+
+.project-card {
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s,
+              max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s ease, margin 0.3s ease;
 }
 
 .project-card:hover .project-link-icon {

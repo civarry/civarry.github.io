@@ -815,3 +815,33 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     }
   });
 });
+
+// ========== Window Traffic Light Controls ==========
+document.querySelectorAll('.window-bar').forEach(bar => {
+  const card = bar.closest('.project-card');
+  if (!card) return;
+
+  bar.querySelector('.wdot-red').addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    card.classList.remove('minimized');
+    card.classList.add('closed');
+  });
+
+  bar.querySelector('.wdot-yellow').addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (card.classList.contains('minimized')) {
+      card.classList.remove('minimized');
+    } else {
+      card.classList.add('minimized');
+    }
+  });
+
+  bar.querySelector('.wdot-green').addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    card.classList.remove('minimized');
+    card.classList.remove('closed');
+  });
+});
