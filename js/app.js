@@ -873,13 +873,16 @@ function checkAllClosed() {
   const allCardsClosed = Array.from(cards).every(c => c.classList.contains('closed'));
   const termClosed = terminalEl && terminalEl.classList.contains('closed');
 
+  const subtitle = document.querySelector('#projects .section-subtitle');
   if (allCardsClosed && termClosed) {
     grid.style.display = 'none';
     tRow.style.display = 'none';
+    if (subtitle) subtitle.style.display = 'none';
     empty.classList.add('visible');
   } else {
     grid.style.display = '';
     tRow.style.display = '';
+    if (subtitle) subtitle.style.display = '';
     empty.classList.remove('visible');
   }
 }
