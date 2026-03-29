@@ -699,15 +699,13 @@ const terminalCommands = {
   help: () => [
     'Available commands:',
     '',
-    '  <span class="t-cmd">ls</span>          List files            <span class="t-cmd">cat</span>   Read a file',
-    '  <span class="t-cmd">cd</span>          Change directory      <span class="t-cmd">pwd</span>   Print working dir',
-    '  <span class="t-cmd">about</span>       Who is CJ?            <span class="t-cmd">clear</span> Clear terminal',
-    '  <span class="t-cmd">skills</span>      Tech stack            <span class="t-cmd">contact</span> Get in touch',
+    '  <span class="t-cmd">about</span>       Who is CJ?',
+    '  <span class="t-cmd">skills</span>      Tech stack',
     '  <span class="t-cmd">projects</span>    Things I\'ve built',
     '  <span class="t-cmd">experience</span>  Work history',
     '  <span class="t-cmd">education</span>   Academic background',
-    '',
-    '<span class="t-dim">This is a real shell. Try exploring the filesystem.</span>'
+    '  <span class="t-cmd">contact</span>     Get in touch',
+    '  <span class="t-cmd">clear</span>       Clear terminal',
   ],
   about: () => {
     const node = fsGetNode(['about.txt']);
