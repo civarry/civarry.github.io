@@ -1,3 +1,67 @@
+// ========== Console Easter Egg ==========
+console.log(
+  '%c\n' +
+  '  ██████╗ ██╗\n' +
+  ' ██╔════╝ ██║\n' +
+  ' ██║      ██║\n' +
+  ' ██║      ██║\n' +
+  ' ╚██████╗ ██████╗\n' +
+  '  ╚═════╝ ╚═════╝\n',
+  'color: #3b82f6; font-family: monospace; font-size: 12px;'
+);
+console.log(
+  '%cYou opened DevTools. I respect that.',
+  'color: #22c55e; font-size: 14px; font-weight: bold;'
+);
+console.log(
+  '%cLooking for bugs? Hire me instead.\n' +
+  '%cgithub.com/civarry  •  linkedin.com/in/cccarito\n',
+  'color: #888; font-size: 12px;',
+  'color: #3b82f6; font-size: 11px;'
+);
+
+// ========== DevTools Shortcut Intercept ==========
+document.addEventListener('keydown', function (e) {
+  // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C, Cmd+Option+I (Mac)
+  const isDevTools =
+    e.key === 'F12' ||
+    ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c'));
+
+  if (isDevTools) {
+    // Show it once in the page, don't block the action
+    const existing = document.getElementById('devtools-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'devtools-toast';
+    toast.className = 'devtools-toast';
+    toast.textContent = 'Curious? Check the console.';
+    document.body.appendChild(toast);
+
+    setTimeout(function () { toast.classList.add('devtools-toast-visible'); }, 10);
+    setTimeout(function () { toast.classList.remove('devtools-toast-visible'); }, 2500);
+    setTimeout(function () { toast.remove(); }, 3000);
+  }
+});
+
+// Intercept right-click
+document.addEventListener('contextmenu', function (e) {
+  // Only intercept once per session
+  if (window._ctxShown) return;
+  window._ctxShown = true;
+
+  e.preventDefault();
+
+  const toast = document.createElement('div');
+  toast.className = 'devtools-toast';
+  toast.textContent = 'Go ahead, inspect away. I left something in the console.';
+  document.body.appendChild(toast);
+
+  setTimeout(function () { toast.classList.add('devtools-toast-visible'); }, 10);
+  setTimeout(function () { toast.classList.remove('devtools-toast-visible'); }, 2500);
+  setTimeout(function () { toast.remove(); }, 3000);
+});
+
 // ========== Supabase Configuration ==========
 // Congrats, you found the key. Go ahead, try something. I'll wait.
 const SUPABASE_URL = 'https://bxrpppfiplqddcuzmfnq.supabase.co';
