@@ -509,45 +509,215 @@ fetchSiteSettings();
 setInterval(fetchSiteSettings, 5000);
 
 // ========== Interactive Terminal ==========
+
+// Virtual filesystem
+const FS = {
+  '.bashrc': [
+    "alias yolo='git push --force origin main'",
+    "alias please='sudo'",
+    "alias fml='git reset --hard HEAD~1'",
+    "export PS1='visitor@cj:\\w$ '",
+    '',
+    '# Why are you reading my bashrc?'
+  ],
+  '.env': [
+    '# DO NOT COMMIT THIS FILE',
+    'DB_HOST=localhost',
+    'DB_USER=admin',
+    'DB_PASS=correcthorsebatterystaple',
+    'SUPABASE_URL=https://bxrpppfiplqddcuzmfnq.supabase.co',
+    'SUPABASE_KEY=nice_try_this_one_is_fake_lol',
+    'OPENAI_KEY=sk-proj-not-a-real-key-but-nice-try',
+    'SECRET_MSG=aHR0cHM6Ly95b3V0dS5iZS9kUXc0dzlXZ1hjUQ=='
+  ],
+  'about.txt': [
+    'Name:     CJ Carito',
+    'Role:     Data Scientist & Developer',
+    'Location: Quezon City, PH',
+    'Coffee:   Required',
+    '',
+    'I find problems that annoy me, then build things to fix them.',
+    "3+ years in tech — ML, LLMs, and building things that",
+    "probably shouldn't be running on free tiers."
+  ],
+  'skills.json': [
+    '{',
+    '  "languages": ["Python", "SQL", "JavaScript", "Dart"],',
+    '  "frameworks": ["Flask", "Django", "React", "Streamlit", "Flutter"],',
+    '  "ai_ml": ["TensorFlow", "Scikit-learn", "LLMs", "RAG", "NLP"],',
+    '  "data": ["PySpark", "Pandas", "Databricks"],',
+    '  "backend": ["Supabase", "GitHub Actions", "REST APIs"],',
+    '  "tools": ["Git", "Linux", "Docker"],',
+    '  "philosophy": "If it solves the problem, I\'ll learn it."',
+    '}'
+  ],
+  'contact.yml': [
+    'contact:',
+    '  github: github.com/civarry',
+    '  linkedin: linkedin.com/in/cccarito',
+    '  form: "scroll down — it has a cool pipeline viz"'
+  ],
+  'education.md': [
+    '# Education',
+    'BS Computer Science',
+    'Our Lady of Fatima University',
+    '2019 - 2023'
+  ],
+  'easter_eggs.sh': [
+    '#!/bin/bash',
+    '# You found one! But there are more.',
+    '# Hint: try clicking things multiple times.',
+    '# Hint: try the dangerous commands.',
+    'echo "Keep exploring..."'
+  ],
+  'projects': {
+    'unfooled.md': [
+      '# UnFooled',
+      'Gamified critical thinking trainer built with Flutter.',
+      'Status: Deployed',
+      "Fun fact: Named after my frustration with misinformation."
+    ],
+    'android-file-xfer.md': [
+      '# Android File Transfer',
+      'macOS file manager over ADB. Built with PyQt6.',
+      'Because the official Android File Transfer app is... inadequate.'
+    ],
+    'payslip-auto.md': [
+      '# Payslip Auto',
+      'PDF payslip generator + bulk email sender.',
+      'Built with Streamlit. Saved HR hours of manual work.'
+    ],
+    'reviewai.md': [
+      '# ReviewAI',
+      'AI-powered question generator from uploaded documents.',
+      'Built with Flask. Uses LLMs to create review materials.'
+    ],
+    'html-components.md': [
+      '# Streamlit HTML Components',
+      'Bridges HTML/CSS/JS into Streamlit apps.',
+      'Published on PyPI. Because Streamlit needed more freedom.'
+    ]
+  },
+  'experience': {
+    'data-scientist-2025.log': [
+      '[2025-present] Data Scientist',
+      'Focus: LLMs, RAG, cybersecurity, PySpark',
+      'Status: Currently building things that matter'
+    ],
+    'inchcape-digital.log': [
+      '[2022-2025] Data Scientist @ Inchcape Digital',
+      'Focus: ML models, data pipelines, LLM tools',
+      'Highlight: Built ML models that actually made it to production',
+      'Plot twist: Most of the job was cleaning data'
+    ]
+  },
+  'secrets': {
+    'passwords.txt': [
+      'Honestly, I just use a password manager.',
+      'What were you expecting to find here?',
+      '',
+      "...fine. The wifi password is 'stopsnooping'."
+    ],
+    'api-keys.txt': [
+      'GITHUB_TOKEN=ghp_this_is_definitely_not_real',
+      'AWS_SECRET=AKIA_nice_try_buddy',
+      'STRIPE_KEY=sk_live_lol_no',
+      '',
+      '# If you\'re hunting for API keys in a static',
+      '# portfolio site, consider a career in security.'
+    ],
+    'master-plan.txt': [
+      'PHASE 1: Build portfolio on free tiers',
+      'PHASE 2: ???',
+      'PHASE 3: Profit',
+      '',
+      'Current status: Stuck on Phase 2'
+    ]
+  }
+};
+
+// Filesystem helpers
+let fsCwd = []; // path segments relative to /home/visitor
+
+function fsGetNode(segments) {
+  let node = FS;
+  for (let i = 0; i < segments.length; i++) {
+    if (!node || typeof node !== 'object' || Array.isArray(node)) return null;
+    node = node[segments[i]];
+  }
+  return node !== undefined ? node : null;
+}
+
+function fsResolvePath(pathStr) {
+  if (!pathStr || pathStr === '~') return [];
+  let parts;
+  if (pathStr.startsWith('/home/visitor/')) {
+    parts = pathStr.slice('/home/visitor/'.length).split('/').filter(Boolean);
+  } else if (pathStr.startsWith('/home/visitor')) {
+    parts = [];
+  } else if (pathStr.startsWith('~/')) {
+    parts = pathStr.slice(2).split('/').filter(Boolean);
+  } else if (pathStr === '/') {
+    return null; // not allowed above home
+  } else if (pathStr.startsWith('/')) {
+    return null;
+  } else {
+    parts = fsCwd.concat(pathStr.split('/').filter(Boolean));
+  }
+  // Resolve . and ..
+  const resolved = [];
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i] === '.') continue;
+    if (parts[i] === '..') { resolved.pop(); continue; }
+    resolved.push(parts[i]);
+  }
+  return resolved;
+}
+
+function fsIsDir(node) {
+  return node && typeof node === 'object' && !Array.isArray(node);
+}
+
+function fsPromptPath() {
+  return fsCwd.length === 0 ? '~' : '~/' + fsCwd.join('/');
+}
+
+function fsPromptHTML() {
+  return '<span class="t-prompt-user">visitor@cj</span>:<span class="t-prompt-path">' + fsPromptPath() + '</span>$';
+}
+
+// ls -la metadata generator
+function fsLsLong(node, name, isDir) {
+  const perms = isDir ? 'drwxr-xr-x' : (name === '.env' ? '-rw-------' : (name.endsWith('.sh') ? '-rwxr-xr-x' : '-rw-r--r--'));
+  const size = isDir ? '4096' : String(Array.isArray(node) ? node.join('\n').length : 64);
+  const date = 'Mar 29 12:00';
+  const display = isDir ? '<span class="t-cmd">' + name + '/</span>' : name;
+  return perms + '  1 visitor visitor ' + size.padStart(5) + ' ' + date + ' ' + display;
+}
+
 const terminalCommands = {
   help: () => [
     'Available commands:',
     '',
-    '  <span class="t-cmd">about</span>       Who is CJ?',
-    '  <span class="t-cmd">skills</span>      Tech stack',
+    '  <span class="t-cmd">ls</span>          List files            <span class="t-cmd">cat</span>   Read a file',
+    '  <span class="t-cmd">cd</span>          Change directory      <span class="t-cmd">pwd</span>   Print working dir',
+    '  <span class="t-cmd">about</span>       Who is CJ?            <span class="t-cmd">clear</span> Clear terminal',
+    '  <span class="t-cmd">skills</span>      Tech stack            <span class="t-cmd">contact</span> Get in touch',
     '  <span class="t-cmd">projects</span>    Things I\'ve built',
     '  <span class="t-cmd">experience</span>  Work history',
     '  <span class="t-cmd">education</span>   Academic background',
-    '  <span class="t-cmd">contact</span>     Get in touch',
-    '  <span class="t-cmd">clear</span>       Clear terminal',
     '',
-    '<span class="t-dim">Try some hidden commands too...</span>'
+    '<span class="t-dim">This is a real shell. Try exploring the filesystem.</span>'
   ],
-  about: () => [
-    '<span class="t-accent">CJ Carito</span> (Christian Joy C. Carito)',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    'Data Scientist & Developer from Quezon City, PH.',
-    '',
-    'I find problems that annoy me, then build things to fix them.',
-    'Python-first, but I\'ll use whatever the problem needs.',
-    '',
-    '3+ years in tech — ML, LLMs, and building things that',
-    'probably shouldn\'t be running on free tiers.',
-  ],
-  whoami: () => terminalCommands.about(),
-  skills: () => [
-    '<span class="t-accent">Tech Stack</span>',
-    '━━━━━━━━━━━━━',
-    '',
-    '  Languages    Python, SQL, JavaScript, Dart',
-    '  Frameworks   Flask, Django, ReactJS, Streamlit, Flutter',
-    '  AI/ML        TensorFlow, Scikit-learn, LLMs, RAG, NLP',
-    '  Data         PySpark, Pandas, Databricks',
-    '  Backend      Supabase, GitHub Actions, REST APIs',
-    '  Tools        Git, Linux, Docker',
-    '',
-    '<span class="t-dim">If it solves the problem, I\'ll learn it.</span>'
-  ],
+  about: () => {
+    const node = fsGetNode(['about.txt']);
+    return ['<span class="t-accent">CJ Carito</span> (Christian Joy C. Carito)', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'].concat(node ? node.slice(4) : []);
+  },
+  whoami: () => ['visitor'],
+  skills: () => {
+    const node = fsGetNode(['skills.json']);
+    return node ? node.map(function (l) { return l; }) : [];
+  },
   projects: () => [
     '<span class="t-accent">Featured Projects</span>',
     '━━━━━━━━━━━━━━━━━━━',
@@ -558,7 +728,7 @@ const terminalCommands = {
     '  ReviewAI           AI question generator from docs (Flask)',
     '  HTML Components    Bridges HTML/CSS/JS with Streamlit (PyPI)',
     '',
-    '<span class="t-dim">Scroll down or type "contact" to discuss ideas.</span>'
+    '<span class="t-dim">Try: cd projects &amp;&amp; ls</span>'
   ],
   experience: () => [
     '<span class="t-accent">Work Experience</span>',
@@ -570,43 +740,124 @@ const terminalCommands = {
     '  2022-2025      Data Scientist @ Inchcape Digital',
     '                 ML models, data pipelines, LLM tools',
     '',
-    '<span class="t-dim">3+ years building ML models, data pipelines, and AI tools.</span>'
+    '<span class="t-dim">Try: cd experience &amp;&amp; ls</span>'
   ],
   work: () => terminalCommands.experience(),
-  education: () => [
-    '<span class="t-accent">Education</span>',
-    '━━━━━━━━━━━━',
-    '',
-    '  BS Computer Science',
-    '  Our Lady of Fatima University',
-    '  2019 - 2023'
-  ],
-  contact: () => [
-    '<span class="t-accent">Get In Touch</span>',
-    '━━━━━━━━━━━━━━',
-    '',
-    '  GitHub     github.com/civarry',
-    '  LinkedIn   linkedin.com/in/cccarito',
-    '',
-    '<span class="t-dim">Or scroll down — the contact form has a cool pipeline viz.</span>'
-  ],
+  education: () => {
+    const node = fsGetNode(['education.md']);
+    return node ? node : [];
+  },
+  contact: () => {
+    const node = fsGetNode(['contact.yml']);
+    return node ? node : [];
+  },
+  // Filesystem commands
+  pwd: () => ['/home/visitor' + (fsCwd.length ? '/' + fsCwd.join('/') : '')],
+  cd: (args) => {
+    if (!args || args === '~' || args === '~/' || args === '/home/visitor') {
+      fsCwd = [];
+      return [];
+    }
+    if (args === '-') return ['<span class="t-dim">OLDPWD not set</span>'];
+    const resolved = fsResolvePath(args);
+    if (resolved === null) return ['<span style="color:#f87171">cd: permission denied: cannot leave /home/visitor</span>'];
+    const node = fsGetNode(resolved);
+    if (node === null) return ['<span style="color:#f87171">cd: no such file or directory: ' + args + '</span>'];
+    if (!fsIsDir(node)) return ['<span style="color:#f87171">cd: not a directory: ' + args + '</span>'];
+    fsCwd = resolved;
+    return [];
+  },
+  ls: (args) => {
+    let target = fsCwd;
+    let showHidden = false;
+    let showLong = false;
+    const flags = [];
+    const paths = [];
+
+    if (args) {
+      args.split(/\s+/).forEach(function (a) {
+        if (a.startsWith('-')) flags.push(a);
+        else paths.push(a);
+      });
+    }
+    flags.forEach(function (f) {
+      if (f.indexOf('a') !== -1) showHidden = true;
+      if (f.indexOf('l') !== -1) showLong = true;
+    });
+
+    if (paths.length > 0) {
+      const resolved = fsResolvePath(paths[0]);
+      if (resolved === null) return ['<span style="color:#f87171">ls: cannot access \'' + paths[0] + '\': Permission denied</span>'];
+      const node = fsGetNode(resolved);
+      if (node === null) return ['<span style="color:#f87171">ls: cannot access \'' + paths[0] + '\': No such file or directory</span>'];
+      if (!fsIsDir(node)) {
+        // It's a file — just show it
+        return showLong ? [fsLsLong(node, paths[0].split('/').pop(), false)] : [paths[0].split('/').pop()];
+      }
+      target = resolved;
+    }
+
+    const node = fsGetNode(target);
+    if (!node || !fsIsDir(node)) return ['<span style="color:#f87171">ls: not a directory</span>'];
+
+    const entries = Object.keys(node).sort();
+    const visible = showHidden ? entries : entries.filter(function (n) { return n[0] !== '.'; });
+
+    if (showLong) {
+      const lines = ['total ' + (visible.length * 4)];
+      if (showHidden) {
+        lines.push('drwxr-xr-x  ' + (Object.keys(node).length + 2) + ' visitor visitor  4096 Mar 29 12:00 <span class="t-cmd">.</span>');
+        lines.push('drwxr-xr-x  3 visitor visitor  4096 Mar 29 12:00 <span class="t-cmd">..</span>');
+      }
+      visible.forEach(function (name) {
+        const child = node[name];
+        lines.push(fsLsLong(child, name, fsIsDir(child)));
+      });
+      return lines;
+    }
+
+    // Short format — columns
+    const items = visible.map(function (name) {
+      return fsIsDir(node[name]) ? '<span class="t-cmd">' + name + '/</span>' : name;
+    });
+    // Simple 3-column layout
+    const cols = 3;
+    const rows = [];
+    for (let i = 0; i < items.length; i += cols) {
+      rows.push(items.slice(i, i + cols).join('    '));
+    }
+    return rows;
+  },
+  cat: (args) => {
+    if (!args) return ['Usage: cat &lt;filename&gt;'];
+    const resolved = fsResolvePath(args);
+    if (resolved === null) return ['<span style="color:#f87171">cat: ' + args + ': Permission denied</span>'];
+    const node = fsGetNode(resolved);
+    if (node === null) return ['<span style="color:#f87171">cat: ' + args + ': No such file or directory</span>'];
+    if (fsIsDir(node)) return ['<span style="color:#f87171">cat: ' + args + ': Is a directory</span>'];
+    return node;
+  },
+  head: (args) => {
+    if (!args) return ['Usage: head &lt;filename&gt;'];
+    const resolved = fsResolvePath(args);
+    if (resolved === null) return ['<span style="color:#f87171">head: ' + args + ': Permission denied</span>'];
+    const node = fsGetNode(resolved);
+    if (node === null) return ['<span style="color:#f87171">head: ' + args + ': No such file or directory</span>'];
+    if (fsIsDir(node)) return ['<span style="color:#f87171">head: ' + args + ': Is a directory</span>'];
+    return node.slice(0, 5);
+  },
   // Easter eggs
   sudo: (args) => {
-    if (!args) return ['Usage: sudo <command>', '<span class="t-dim">Password is required for sudo.</span>'];
+    if (!args) return ['Usage: sudo &lt;command&gt;', '<span class="t-dim">[sudo] password for visitor:</span>'];
     return ['<span class="t-dim">[sudo] password for visitor: ******</span>', '<span class="t-dim">Sorry, try again.</span>'];
   },
-  'rm -rf /': () => ['<span class="t-dim">Permission denied. Try with sudo.</span>'],
+  'rm -rf /': () => ['<span style="color:#f87171">rm: permission denied. Try with sudo.</span>'],
   'rm -rf': () => terminalCommands['rm -rf /'](),
+  rm: () => ['<span style="color:#f87171">rm: cannot remove: Read-only file system</span>'],
   'sudo rm -rf /': '__MELTDOWN__',
   'sudo rm -rf': '__MELTDOWN__',
   hack: () => ['<span class="t-dim">Hack what? This runs on free tiers. There\'s nothing to steal.</span>'],
   exit: () => ['<span class="t-dim">You can\'t exit. You\'re in too deep. Type "help" instead.</span>'],
-  ls: () => [
-    'about.txt    skills.json    projects/',
-    'experience/  education.md   contact.yml',
-    '<span class="t-dim">secrets/     .env</span>           easter_eggs.sh'
-  ],
-  pwd: () => ['/home/visitor/cj-portfolio'],
   date: () => [new Date().toLocaleString()],
   echo: (args) => [args || ''],
   ping: () => ['PONG! Site is alive and running on pure stubbornness.'],
@@ -621,13 +872,30 @@ const terminalCommands = {
     '         <span class="t-accent">RAM:</span>    Supabase Free Tier',
     '         <span class="t-accent">Uptime:</span> Somehow still running'
   ],
-  cat: (args) => {
-    if (!args) return ['Usage: cat <filename>'];
-    if (args.includes('secret') || args.includes('.env'))
-      return ['<span class="t-dim">Permission denied. Nice try though.</span>'];
-    return ['<span class="t-dim">No such file. Try "ls" to see what\'s here.</span>'];
-  },
   vim: () => ['<span class="t-dim">You\'re stuck in vim. Just kidding. Type "help".</span>'],
+  nano: () => ['<span class="t-dim">Read-only filesystem. Nice text editor though.</span>'],
+  touch: () => ['<span style="color:#f87171">touch: cannot touch: Read-only file system</span>'],
+  mkdir: () => ['<span style="color:#f87171">mkdir: cannot create directory: Read-only file system</span>'],
+  chmod: () => ['<span class="t-dim">chmod: changing permissions of a static site? Bold.</span>'],
+  wget: () => ['<span class="t-dim">wget: this terminal has no internet. It\'s decorative.</span>'],
+  curl: () => ['<span class="t-dim">curl: same energy as wget. No network access here.</span>'],
+  ssh: () => ['<span class="t-dim">ssh: connection refused. You\'re already inside.</span>'],
+  apt: () => ['<span class="t-dim">E: This is not a real Debian system. Nice try.</span>'],
+  brew: () => ['<span class="t-dim">brew: command not found. This isn\'t macOS either.</span>'],
+  grep: (args) => {
+    if (!args) return ['Usage: grep &lt;pattern&gt; &lt;file&gt;'];
+    return ['<span class="t-dim">grep: try cat instead, this is a simple shell.</span>'];
+  },
+  find: () => ['<span class="t-dim">find: try "ls" and "cd" — you\'ll find what you need.</span>'],
+  history: () => ['<span class="t-dim">Nice try. History is cleared on every session.</span>'],
+  id: () => ['uid=1000(visitor) gid=1000(visitor) groups=1000(visitor)'],
+  uname: () => ['Linux cj-portfolio 6.1.0-free-tier #1 SMP x86_64 GNU/Linux'],
+  hostname: () => ['cj-portfolio'],
+  uptime: () => ['up ' + Math.floor((Date.now() - performance.timeOrigin) / 1000) + ' seconds, 1 user, load average: 0.00, 0.01, 0.05'],
+  man: (args) => {
+    if (!args) return ['What manual page do you want?'];
+    return ['<span class="t-dim">No manual entry for ' + args + '. Try "help".</span>'];
+  },
   '': () => []
 };
 
@@ -749,6 +1017,13 @@ function meltdown(addLine, input, termBody) {
 
   const history = [];
   let histIdx = -1;
+  const promptEl = document.querySelector('.terminal-prompt');
+
+  function updatePrompt() {
+    if (promptEl) {
+      promptEl.innerHTML = '<span class="t-prompt-user">visitor@cj</span>:<span class="t-prompt-path">' + fsPromptPath() + '</span>$';
+    }
+  }
 
   function addLine(html, className) {
     const line = document.createElement('div');
@@ -763,7 +1038,8 @@ function meltdown(addLine, input, termBody) {
     history.unshift(trimmed);
     histIdx = -1;
 
-    addLine(sanitize(trimmed), 't-command');
+    // Echo command with current prompt
+    addLine(fsPromptHTML() + ' ' + sanitize(trimmed), 't-command');
 
     if (trimmed.toLowerCase() === 'clear') {
       output.innerHTML = '';
@@ -786,6 +1062,8 @@ function meltdown(addLine, input, termBody) {
       addLine(`command not found: ${sanitize(base)}. Type <span class="t-cmd">help</span> for available commands.`);
     }
 
+    // Update prompt after command (cd may have changed cwd)
+    updatePrompt();
     body.scrollTop = body.scrollHeight;
   }
 

@@ -1557,10 +1557,6 @@ body.light-mode .section-alt {
 .terminal-line.t-command {
   color: #22c55e;
 }
-.terminal-line.t-command::before {
-  content: '$ ';
-  color: #555;
-}
 .t-cmd {
   color: #3b82f6;
 }
@@ -1570,6 +1566,14 @@ body.light-mode .section-alt {
 .t-dim {
   color: #666;
 }
+.t-prompt-user {
+  color: #22c55e;
+  font-weight: 600;
+}
+.t-prompt-path {
+  color: #3b82f6;
+  font-weight: 600;
+}
 .terminal-input-line {
   display: flex;
   align-items: center;
@@ -1577,8 +1581,9 @@ body.light-mode .section-alt {
   margin-top: 8px;
 }
 .terminal-prompt {
-  color: #22c55e;
+  color: #d4d4d4;
   font-weight: 600;
+  white-space: nowrap;
 }
 .terminal-input {
   background: none;
