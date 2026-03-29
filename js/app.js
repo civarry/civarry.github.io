@@ -525,8 +525,8 @@ const FS = {
     'DB_HOST=localhost',
     'DB_USER=admin',
     'DB_PASS=correcthorsebatterystaple',
-    'SUPABASE_URL=https://bxrpppfiplqddcuzmfnq.supabase.co',
-    'SUPABASE_KEY=nice_try_this_one_is_fake_lol',
+    'SUPABASE_URL=https://totally-real-db.supabase.co',
+    'SUPABASE_KEY=eyJhbGciOiJub3BlIiwidHlwIjoibG9sIn0',
     'OPENAI_KEY=sk-proj-not-a-real-key-but-nice-try',
     'SECRET_MSG=aHR0cHM6Ly95b3V0dS5iZS9kUXc0dzlXZ1hjUQ=='
   ],
