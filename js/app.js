@@ -526,8 +526,8 @@ const FS = {
     'DB_USER=admin',
     'DB_PASS=correcthorsebatterystaple',
     'SUPABASE_URL=https://totally-real-db.supabase.co',
-    'SUPABASE_KEY=eyJhbGciOiJub3BlIiwidHlwIjoibG9sIn0',
-    'OPENAI_KEY=sk-proj-not-a-real-key-but-nice-try',
+    'SUPABASE_KEY=not-a-real-key-but-nice-try',
+    'OPENAI_KEY=lol-you-thought-this-was-real',
     'SECRET_MSG=aHR0cHM6Ly95b3V0dS5iZS9kUXc0dzlXZ1hjUQ=='
   ],
   'about.txt': [
@@ -619,9 +619,9 @@ const FS = {
       "...fine. The wifi password is 'stopsnooping'."
     ],
     'api-keys.txt': [
-      'GITHUB_TOKEN=ghp_this_is_definitely_not_real',
-      'AWS_SECRET=AKIA_nice_try_buddy',
-      'STRIPE_KEY=sk_live_lol_no',
+      'GITHUB_TOKEN=lol_this_is_definitely_not_real',
+      'AWS_SECRET=nice_try_buddy_no_keys_here',
+      'STRIPE_KEY=haha_no_stripe_here',
       '',
       '# If you\'re hunting for API keys in a static',
       '# portfolio site, consider a career in security.'
