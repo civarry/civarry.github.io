@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EyeRest — Privacy Policy</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-primary: #0a0a0a;
+    --bg-card: #151515;
+    --text-primary: #e8e8e8;
+    --text-secondary: #999999;
+    --text-muted: #777777;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --border: #1e1e1e;
+    --radius: 12px;
+  }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 64px 24px 96px;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-bottom: 48px;
+  }
+
+  .nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .nav a:hover { color: var(--accent); }
+  .nav .sep { opacity: 0.4; }
+  .nav .current { color: var(--text-primary); }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #e8e8e8 0%, #999999 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 48px;
+  }
+
+  .summary {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 40px;
+  }
+
+  .summary-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .summary p {
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-top: 48px;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+  }
+
+  p {
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    font-size: 0.97rem;
+  }
+
+  ul {
+    list-style: none;
+    margin-bottom: 12px;
+  }
+
+  li {
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+    font-size: 0.97rem;
+  }
+
+  li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 6px;
+    height: 1px;
+    background: var(--text-muted);
+  }
+
+  strong { color: var(--text-primary); font-weight: 600; }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s ease;
+  }
+
+  a:hover { border-bottom-color: var(--accent); }
+
+  .footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <nav class="nav">
+    <a href="../">CJ Carito</a>
+    <span class="sep">/</span>
+    <span class="current">EyeRest — Privacy Policy</span>
+  </nav>
+
+  <h1>EyeRest Privacy Policy</h1>
+  <p class="subtitle">Last updated: May 13, 2026</p>
+
+  <div class="summary">
+    <div class="summary-label">The short version</div>
+    <p>EyeRest collects no personal data, transmits nothing to any server, requires no account, and works entirely offline. The app contains no analytics, no advertising, and no third-party tracking SDKs.</p>
+  </div>
+
+  <p>EyeRest is built and maintained by CJ Carito (Christian Joy Collano Carito) as an independent developer. This policy explains what EyeRest does &mdash; and does not &mdash; do with your data.</p>
+
+  <h2>What EyeRest stores on your device</h2>
+  <p>The following are stored only on your device and never transmitted anywhere:</p>
+  <ul>
+    <li>Your settings (focus interval, break duration, quiet hours, etc.) &mdash; via Android's SharedPreferences.</li>
+    <li>Your completed break logs (date, duration, status) &mdash; in a local SQLite database for the in-app daily and weekly stats.</li>
+  </ul>
+  <p>Uninstalling EyeRest deletes all of this permanently.</p>
+
+  <h2>Permissions EyeRest requests</h2>
+  <ul>
+    <li><strong>Notifications</strong> &mdash; to show eye-break reminders.</li>
+    <li><strong>Display over other apps</strong> (optional, opt-in) &mdash; only used when "Strict break lock" is enabled, and only during an active 20-second break. Dismisses automatically when the break ends.</li>
+    <li><strong>Schedule exact alarms</strong> &mdash; to fire the eye-break reliably at the end of each focus interval.</li>
+    <li><strong>Vibrate</strong> &mdash; for the gentle haptic cue at break start.</li>
+    <li><strong>Wake lock</strong> and <strong>Foreground service</strong> &mdash; to keep the alarm sound playing and the break overlay visible during an active break.</li>
+  </ul>
+  <p>EyeRest does <strong>not</strong> request: camera, microphone, location, contacts, storage, phone state, SMS, or any other sensitive permission.</p>
+
+  <h2>Third-party services</h2>
+  <p>EyeRest uses no third-party services. No Google Analytics, no Firebase, no crash reporting, no remote configuration, no ads.</p>
+
+  <h2>Children</h2>
+  <p>EyeRest is not designed for or directed at children under 13. The app does not knowingly collect data from anyone, regardless of age.</p>
+
+  <h2>Changes to this policy</h2>
+  <p>If EyeRest ever adds a feature that changes what data is handled (for example, an optional tip-jar in-app purchase using Google Play Billing), this policy will be updated and the "Last updated" date above will change.</p>
+
+  <h2>Contact</h2>
+  <p>Questions or concerns: <a href="mailto:cjcarito.dev@gmail.com">cjcarito.dev@gmail.com</a></p>
+
+  <div class="footer">
+    &copy; 2026 CJ Carito &middot; <a href="../">civarry.github.io</a>
+  </div>
+
+</div>
+
+</body>
+</html>
