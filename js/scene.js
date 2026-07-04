@@ -419,18 +419,22 @@ import * as THREE from './vendor/three.module.min.js';
     }
   }
 
-  // Fade the hero copy away while zoomed in, so the graph is explorable
+  // Fade the hero copy away while zoomed in — and while pointing at a
+  // node, so nodes behind the text are visible and clickable
   let lastFade = -1;
+  let hoverDim = 1;
   function updateZoomFade() {
     const zf = Math.min(1, Math.max(0, (camera.position.z - 5.6) / 2.2));
-    if (Math.abs(zf - lastFade) < 0.01) return;
-    lastFade = zf;
+    hoverDim += ((hovered >= 0 ? 0.08 : 1) - hoverDim) * 0.15;
+    const fade = zf * hoverDim;
+    if (Math.abs(fade - lastFade) < 0.005) return;
+    lastFade = fade;
     if (heroContent) {
-      heroContent.style.opacity = zf;
-      heroContent.style.pointerEvents = zf < 0.35 ? 'none' : '';
+      heroContent.style.opacity = fade;
+      heroContent.style.pointerEvents = fade < 0.35 ? 'none' : '';
     }
-    if (scrollIndicator) scrollIndicator.style.opacity = zf;
-    if (heroEl) heroEl.style.setProperty('--scrim-o', zf);
+    if (scrollIndicator) scrollIndicator.style.opacity = fade;
+    if (heroEl) heroEl.style.setProperty('--scrim-o', fade);
   }
 
   // ---------- Render loop ----------
