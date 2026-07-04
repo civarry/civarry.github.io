@@ -74,6 +74,55 @@ body.light-mode #scene-canvas {
   opacity: 0.9;
 }
 
+/* Graph overlays — featured-project labels and the hover tooltip */
+#graph-labels {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.node-label {
+  position: fixed;
+  transform: translate(-50%, -170%);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  text-shadow: 0 0 8px var(--bg);
+  transition: opacity 0.3s;
+  white-space: nowrap;
+}
+
+.graph-tooltip {
+  position: fixed;
+  z-index: 5;
+  display: none;
+  max-width: 260px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.graph-tooltip strong {
+  display: block;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.graph-tooltip em {
+  display: block;
+  font-style: normal;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
 /* Everything sits above the canvas */
 .navbar, .announce-banner, section, .footer,
 .contact-panel, .status-widget {
@@ -746,7 +795,7 @@ body.light-mode #scene-canvas {
   grid-template-rows: repeat(7, 10px);
   grid-auto-columns: 10px;
   gap: 3px;
-  overflow-x: auto;
+  overflow: hidden;
   padding-bottom: 0.25rem;
 }
 
