@@ -142,11 +142,12 @@ const supabase = {
 
 // ========== Typing Animation ==========
 const phrases = [
+  'native macOS apps.',
   'automation tools.',
   'AI applications.',
   'things that should exist.',
   'solutions to problems I hate.',
-  'data-driven solutions.',
+  'real-time systems.',
   'cross-platform apps.',
 ];
 
@@ -606,7 +607,7 @@ const FS = {
   ],
   'skills.json': [
     '{',
-    '  "languages": ["Python", "SQL", "JavaScript", "Dart"],',
+    '  "languages": ["Python", "Swift", "SQL", "JavaScript", "Dart"],',
     '  "frameworks": ["Flask", "Django", "React", "Streamlit", "Flutter"],',
     '  "ai_ml": ["TensorFlow", "Scikit-learn", "LLMs", "RAG", "NLP"],',
     '  "data": ["PySpark", "Pandas", "Databricks"],',
@@ -635,31 +636,33 @@ const FS = {
     'echo "Keep exploring..."'
   ],
   'projects': {
-    'unfooled.md': [
-      '# UnFooled',
-      'Gamified critical thinking trainer built with Flutter.',
-      'Status: Deployed',
-      "Fun fact: Named after my frustration with misinformation."
+    'lasso.md': [
+      '# Lasso',
+      'Circle to Search, but native to the Mac. Swift menu-bar app.',
+      'OCR, in-place translation, ask-AI, object ID — local by default',
+      'via Apple Intelligence + Ollama. Nothing leaves your machine',
+      'unless you opt in. 15+ releases shipped.'
+    ],
+    'motioncast.md': [
+      '# MotionCast',
+      'Phone → real-time motion source for any computer.',
+      'Local HTTPS + WebSocket, quaternion-based (no gimbal lock),',
+      'two-way haptics, installable PWA. Zero frontend frameworks.'
     ],
     'android-file-xfer.md': [
       '# Android File Transfer',
       'macOS file manager over ADB. Built with PyQt6.',
       'Because the official Android File Transfer app is... inadequate.'
     ],
-    'payslip-auto.md': [
-      '# Payslip Auto',
-      'PDF payslip generator + bulk email sender.',
+    'payroll-docs.md': [
+      '# Payroll Document System',
+      'PDF payslips, OT and allowance docs from Excel + bulk email.',
       'Built with Streamlit. Saved HR hours of manual work.'
     ],
-    'reviewai.md': [
-      '# ReviewAI',
-      'AI-powered question generator from uploaded documents.',
-      'Built with Flask. Uses LLMs to create review materials.'
-    ],
-    'html-components.md': [
-      '# Streamlit HTML Components',
-      'Bridges HTML/CSS/JS into Streamlit apps.',
-      'Published on PyPI. Because Streamlit needed more freedom.'
+    'this-site.md': [
+      '# This Website',
+      'GitHub Pages frontend, Supabase backend, Telegram remote control.',
+      'The contact form you see runs a real AI pipeline. Costs $0/month.'
     ]
   },
   'experience': {
@@ -784,11 +787,11 @@ const terminalCommands = {
     '<span class="t-accent">Featured Projects</span>',
     '━━━━━━━━━━━━━━━━━━━',
     '',
-    '  UnFooled           Gamified critical thinking trainer (Flutter)',
+    '  Lasso              Circle to Search for Mac, local AI (Swift)',
+    '  MotionCast         Phone → real-time motion controller (WebSocket)',
     '  Android File Xfer  macOS file manager over ADB (PyQt6)',
-    '  Payslip Auto       PDF payslips + bulk email (Streamlit)',
-    '  ReviewAI           AI question generator from docs (Flask)',
-    '  HTML Components    Bridges HTML/CSS/JS with Streamlit (PyPI)',
+    '  Payroll Docs       PDF payslips + bulk email (Streamlit)',
+    '  This Website       Free-tier full-stack with Telegram remote',
     '',
     '<span class="t-dim">Try: cd projects &amp;&amp; ls</span>'
   ],
@@ -1188,6 +1191,73 @@ function meltdown(addLine, input, termBody) {
         `<span><span class="gh-stat-val">${activeDays}</span> active days</span>`;
     }
   } catch { /* silent */ }
+})();
+
+// ========== Live Repo Stats (GitHub API) ==========
+(async function initRepoStats() {
+  const cards = document.querySelectorAll('.project-card[data-repo]');
+  if (!cards.length) return;
+
+  const CACHE_KEY = 'repo_stats_v1';
+  const CACHE_TTL = 3600000; // 1 hour — stays well under the 60/hr unauthenticated API limit
+
+  function timeAgo(iso) {
+    const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+    if (days === 0) return 'today';
+    if (days === 1) return 'yesterday';
+    if (days < 30) return days + ' days ago';
+    const months = Math.floor(days / 30);
+    if (months < 12) return months + ' month' + (months > 1 ? 's' : '') + ' ago';
+    const years = Math.floor(months / 12);
+    return years + ' year' + (years > 1 ? 's' : '') + ' ago';
+  }
+
+  let stats = null;
+  try {
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (cached && Date.now() - cached.ts < CACHE_TTL) stats = cached.data;
+  } catch { /* ignore corrupt cache */ }
+
+  if (!stats) {
+    try {
+      const [reposRes, releasesRes] = await Promise.all([
+        fetch('https://api.github.com/users/civarry/repos?per_page=100'),
+        fetch('https://api.github.com/repos/civarry/lasso-app/releases?per_page=100')
+      ]);
+      if (!reposRes.ok) return;
+      const repos = await reposRes.json();
+
+      stats = {};
+      repos.forEach(r => {
+        stats[r.name] = { stars: r.stargazers_count, pushed: r.pushed_at };
+      });
+
+      if (releasesRes.ok) {
+        const releases = await releasesRes.json();
+        if (Array.isArray(releases) && releases.length && stats['lasso-app']) {
+          stats['lasso-app'].downloads = releases.reduce(
+            (sum, rel) => sum + rel.assets.reduce((s, a) => s + a.download_count, 0), 0
+          );
+          stats['lasso-app'].version = releases[0].tag_name;
+        }
+      }
+
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: stats })); } catch { /* full/unavailable */ }
+    } catch { return; } // offline or rate limited — cards just show no stats
+  }
+
+  cards.forEach(card => {
+    const info = stats[card.dataset.repo];
+    const meta = card.querySelector('.project-meta');
+    if (!info || !meta) return;
+
+    const parts = [];
+    if (info.stars > 0) parts.push('<span><span class="meta-star">★</span> ' + info.stars + '</span>');
+    if (info.downloads) parts.push('<span>' + info.downloads + ' downloads</span>');
+    if (info.version) parts.push('<span>' + sanitize(info.version) + '</span>');
+    parts.push('<span>updated ' + timeAgo(info.pushed) + '</span>');
+    meta.innerHTML = parts.join('<span>·</span>');
+  });
 })();
 
 // ========== Status Widget ==========
