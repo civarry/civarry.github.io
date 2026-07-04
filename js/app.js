@@ -1168,8 +1168,10 @@ function meltdown(addLine, input, termBody) {
     if (!res.ok) return;
     const data = await res.json();
 
-    // Show last 20 weeks of the contribution calendar
-    const displayWeeks = data.weeks.slice(-20);
+    // Show as many whole weeks as fit the card width (10px cells + 3px gap)
+    const fit = Math.floor((grid.clientWidth + 3) / 13);
+    const weekCount = Math.min(data.weeks.length, Math.max(12, fit));
+    const displayWeeks = data.weeks.slice(-weekCount);
 
     displayWeeks.forEach(week => {
       week.forEach(day => {

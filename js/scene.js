@@ -22,7 +22,7 @@ import * as THREE from './vendor/three.module.min.js';
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 50);
-  camera.position.set(0, 0, 7.5);
+  camera.position.set(0, 0, 8.4);
 
   // ----- Particle sphere (fibonacci lattice → perfectly even, symmetric) -----
   const COUNT = 6000;
@@ -57,7 +57,7 @@ import * as THREE from './vendor/three.module.min.js';
     size: 0.022,
     vertexColors: true,
     transparent: true,
-    opacity: 0.85,
+    opacity: 0.6,
     sizeAttenuation: true,
     depthWrite: false
   }));
@@ -88,6 +88,43 @@ import * as THREE from './vendor/three.module.min.js';
   }, { passive: true });
   window.addEventListener('pointerleave', () => { pointer.active = false; });
   window.addEventListener('touchend', () => { pointer.active = false; });
+
+  // Drag to spin the sphere (with inertia). The canvas ignores pointer
+  // events, so the hero section is the drag surface.
+  const heroEl = document.querySelector('.hero');
+  const drag = { on: false, lastX: 0, lastY: 0, velY: 0, velX: 0 };
+
+  if (heroEl) {
+    heroEl.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('a, button, input')) return;
+      drag.on = true;
+      drag.lastX = e.clientX;
+      drag.lastY = e.clientY;
+      drag.velY = 0;
+      drag.velX = 0;
+      heroEl.classList.add('dragging');
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!drag.on) return;
+      const dx = e.clientX - drag.lastX;
+      const dy = e.clientY - drag.lastY;
+      drag.lastX = e.clientX;
+      drag.lastY = e.clientY;
+      drag.velY = dx * 0.005;
+      drag.velX = dy * 0.003;
+      group.rotation.y += drag.velY;
+      group.rotation.x += drag.velX;
+    }, { passive: true });
+
+    const endDrag = () => {
+      if (!drag.on) return;
+      drag.on = false;
+      heroEl.classList.remove('dragging');
+    };
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+  }
 
   function updateHitPoint() {
     // Ray from camera through pointer, intersected with the sphere
@@ -124,7 +161,7 @@ import * as THREE from './vendor/three.module.min.js';
         const dot = dx * hx + dy * hy + dz * hz;
         const ang = Math.acos(Math.min(1, Math.max(-1, dot)));
         const g = Math.exp(-(ang * 3.4) * (ang * 3.4));
-        r += RADIUS * 0.28 * g * pointerStrength;
+        r += RADIUS * 0.45 * g * pointerStrength;
       }
       posAttr[ix] = dx * r;
       posAttr[ix + 1] = dy * r;
@@ -138,14 +175,20 @@ import * as THREE from './vendor/three.module.min.js';
     requestAnimationFrame(frame);
 
     const t = clock.getElapsedTime();
-    group.rotation.y += 0.0012;
     core.rotation.y -= 0.002;
     core.rotation.x += 0.0008;
 
-    // Parallax toward pointer
-    group.rotation.x += ((pointer.y * -0.18) - group.rotation.x) * 0.04;
+    if (!drag.on) {
+      // Idle spin plus leftover drag momentum
+      group.rotation.y += 0.0012 + drag.velY;
+      group.rotation.x += drag.velX;
+      drag.velY *= 0.95;
+      drag.velX *= 0.95;
+      // Settle x back toward level so the sphere never ends up sideways
+      group.rotation.x += (0 - group.rotation.x) * 0.005;
+    }
 
-    pointerStrength += ((pointer.active ? 1 : 0) - pointerStrength) * 0.06;
+    pointerStrength += ((pointer.active ? 1 : 0) - pointerStrength) * 0.12;
     if (pointer.active || pointerStrength > 0.01) updateHitPoint();
     updatePositions(t);
 

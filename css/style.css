@@ -237,9 +237,35 @@ body.light-mode #scene-canvas {
   justify-content: center;
   text-align: center;
   padding: 0 24px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
 }
 
-.hero-content { max-width: 820px; }
+.hero.dragging { cursor: grabbing; }
+
+/* Readability scrim — clears the particles out from behind the text */
+.hero::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(760px, 94vw);
+  height: min(520px, 74vh);
+  background: radial-gradient(ellipse closest-side,
+    color-mix(in srgb, var(--bg) 96%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 72%, transparent) 55%,
+    transparent 100%);
+  pointer-events: none;
+}
+
+.hero-content {
+  max-width: 820px;
+  position: relative;
+  z-index: 1;
+}
 
 .hero-name {
   font-size: clamp(3.5rem, 11vw, 7.5rem);
@@ -730,11 +756,11 @@ body.light-mode #scene-canvas {
   border-radius: 2px;
 }
 
-.gh-level-0 { background: var(--bg-inset); }
-.gh-level-1 { background: #0a3855; }
-.gh-level-2 { background: #0b5c8c; }
+.gh-level-0 { background: #1d1d22; }
+.gh-level-1 { background: #0e4a70; }
+.gh-level-2 { background: #0c6ca6; }
 .gh-level-3 { background: #049ef4; }
-.gh-level-4 { background: #6ec6ff; }
+.gh-level-4 { background: #7ed0ff; }
 
 body.light-mode .gh-level-0 { background: #e4e4e8; }
 
