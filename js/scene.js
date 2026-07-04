@@ -1,8 +1,9 @@
 // 3D hero scene — a constellation of every public repo. Nodes are projects
 // (sized by stars, featured ones in accent blue), edges connect the most
 // similar repos (language, topics, name/description overlap, same era), so
-// clusters show how the work evolved. Drag to spin, hover for details,
-// click to open the repo.
+// clusters show how the work evolved.
+// Controls: drag to spin, double-click / ctrl+scroll / pinch to zoom,
+// hover to highlight a node and its connections, click to open the repo.
 // Vendored three.js (r160) because the CSP only allows same-origin scripts.
 import * as THREE from './vendor/three.module.min.js';
 
@@ -20,6 +21,7 @@ import * as THREE from './vendor/three.module.min.js';
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ACCENT = new THREE.Color(0x049ef4);
+  const HIGHLIGHT = new THREE.Color(0x54c8ff);
   const WHITE = new THREE.Color(0xaeb6bf);
   const FEATURED = new Set(['lasso-app', 'motioncast', 'psx', 'Android-File-Transfer-Mac', 'civarry.github.io']);
 
@@ -27,7 +29,9 @@ import * as THREE from './vendor/three.module.min.js';
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 60);
-  camera.position.set(0, 0, 8.4);
+  const Z_HOME = 8.4, Z_MIN = 4.2, Z_MAX = 12;
+  let targetZ = Z_HOME;
+  camera.position.set(0, 0, Z_HOME);
 
   const group = new THREE.Group();
   scene.add(group);
@@ -103,8 +107,7 @@ import * as THREE from './vendor/three.module.min.js';
   }
 
   // ---------- Force-directed 3D layout ----------
-  function layout(nodes, edges) {
-    const n = nodes.length;
+  function layout(n, edges) {
     const p = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) {
       const v = new THREE.Vector3().randomDirection().multiplyScalar(1.5 + Math.random());
@@ -113,7 +116,6 @@ import * as THREE from './vendor/three.module.min.js';
     const f = new Float32Array(n * 3);
     for (let step = 0; step < 320; step++) {
       f.fill(0);
-      // Pairwise repulsion
       for (let i = 0; i < n; i++) {
         for (let j = i + 1; j < n; j++) {
           let dx = p[i * 3] - p[j * 3], dy = p[i * 3 + 1] - p[j * 3 + 1], dz = p[i * 3 + 2] - p[j * 3 + 2];
@@ -124,7 +126,6 @@ import * as THREE from './vendor/three.module.min.js';
           f[j * 3] -= dx; f[j * 3 + 1] -= dy; f[j * 3 + 2] -= dz;
         }
       }
-      // Springs pull similar repos together (more similar = shorter rest length)
       for (const e of edges) {
         const a = e.a * 3, b = e.b * 3;
         let dx = p[b] - p[a], dy = p[b + 1] - p[a + 1], dz = p[b + 2] - p[a + 2];
@@ -135,13 +136,11 @@ import * as THREE from './vendor/three.module.min.js';
         f[a] += dx; f[a + 1] += dy; f[a + 2] += dz;
         f[b] -= dx; f[b + 1] -= dy; f[b + 2] -= dz;
       }
-      // Gentle pull to center
       for (let i = 0; i < n * 3; i++) {
         f[i] -= p[i] * 0.022;
         p[i] += Math.max(-0.12, Math.min(0.12, f[i]));
       }
     }
-    // Normalize so the constellation fills a consistent radius
     let maxR = 0;
     for (let i = 0; i < n; i++) {
       const r = Math.hypot(p[i * 3], p[i * 3 + 1], p[i * 3 + 2]);
@@ -157,6 +156,9 @@ import * as THREE from './vendor/three.module.min.js';
   let nodeData = [];
   let labelEls = [];
   let tooltip = null;
+  let edgeList = [];
+  let lineColAttr = null;
+  let baseLineCol = null;
   const baseScales = [];
   const nodeWorld = new THREE.Vector3();
   const tmpMat = new THREE.Matrix4();
@@ -165,7 +167,7 @@ import * as THREE from './vendor/three.module.min.js';
     repos.forEach(r => { r.tokens = tokenize(r); });
     const n = repos.length;
 
-    // kNN edges: each repo links to its 2 most similar peers
+    // kNN edges: each repo links to its 3 most similar peers
     const edgeMap = new Map();
     for (let i = 0; i < n; i++) {
       const sims = [];
@@ -180,8 +182,8 @@ import * as THREE from './vendor/three.module.min.js';
         if (!edgeMap.has(key)) edgeMap.set(key, { a: Math.min(i, j), b: Math.max(i, j), sim });
       });
     }
-    const edges = [...edgeMap.values()];
-    const positions = layout(repos.map(r => r.name), edges);
+    edgeList = [...edgeMap.values()];
+    const positions = layout(n, edgeList);
 
     // Nodes — instanced spheres, sized by stars, featured in accent
     const geo = new THREE.SphereGeometry(0.045, 12, 10);
@@ -199,10 +201,10 @@ import * as THREE from './vendor/three.module.min.js';
     group.add(nodesMesh);
 
     // Edges — brightness follows similarity
-    const linePos = new Float32Array(edges.length * 6);
-    const lineCol = new Float32Array(edges.length * 6);
+    const linePos = new Float32Array(edgeList.length * 6);
+    const lineCol = new Float32Array(edgeList.length * 6);
     const dim = new THREE.Color(0x223240);
-    edges.forEach((e, k) => {
+    edgeList.forEach((e, k) => {
       linePos.set([
         positions[e.a * 3], positions[e.a * 3 + 1], positions[e.a * 3 + 2],
         positions[e.b * 3], positions[e.b * 3 + 1], positions[e.b * 3 + 2]
@@ -210,9 +212,11 @@ import * as THREE from './vendor/three.module.min.js';
       const c = dim.clone().lerp(ACCENT, Math.min(1, e.sim * 1.2));
       lineCol.set([c.r, c.g, c.b, c.r, c.g, c.b], k * 6);
     });
+    baseLineCol = lineCol.slice();
     const lineGeo = new THREE.BufferGeometry();
     lineGeo.setAttribute('position', new THREE.BufferAttribute(linePos, 3));
-    lineGeo.setAttribute('color', new THREE.BufferAttribute(lineCol, 3));
+    lineColAttr = new THREE.BufferAttribute(lineCol, 3);
+    lineGeo.setAttribute('color', lineColAttr);
     group.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({
       vertexColors: true, transparent: true, opacity: 0.45, depthWrite: false
     })));
@@ -244,18 +248,45 @@ import * as THREE from './vendor/three.module.min.js';
     document.body.appendChild(tooltip);
   }
 
-  // ---------- Pointer: hover, click, drag ----------
+  // ---------- Pointer: hover, click, drag, zoom ----------
   const pointer = { x: 0, y: 0, px: 0, py: 0 };
   const raycaster = new THREE.Raycaster();
   let hovered = -1;
+  let lastOpen = 0;
   const heroEl = document.querySelector('.hero');
+  const heroContent = document.querySelector('.hero-content');
+  const scrollIndicator = document.querySelector('.scroll-indicator');
   const drag = { on: false, moved: 0, lastX: 0, lastY: 0, velX: 0, velY: 0 };
+  const pinch = { pts: new Map(), dist: 0 };
 
-  window.addEventListener('pointermove', (e) => {
+  function setPointer(e) {
     pointer.px = e.clientX;
     pointer.py = e.clientY;
     pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
     pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  }
+
+  function pickNode() {
+    if (!nodesMesh) return -1;
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObject(nodesMesh);
+    return hits.length ? hits[0].instanceId : -1;
+  }
+
+  window.addEventListener('pointermove', (e) => {
+    setPointer(e);
+    if (pinch.pts.has(e.pointerId)) {
+      pinch.pts.set(e.pointerId, [e.clientX, e.clientY]);
+      if (pinch.pts.size === 2) {
+        const [p1, p2] = [...pinch.pts.values()];
+        const d = Math.hypot(p1[0] - p2[0], p1[1] - p2[1]);
+        if (pinch.dist > 0) {
+          targetZ = Math.min(Z_MAX, Math.max(Z_MIN, targetZ * (pinch.dist / d)));
+        }
+        pinch.dist = d;
+        return;
+      }
+    }
     if (drag.on) {
       const dx = e.clientX - drag.lastX;
       const dy = e.clientY - drag.lastY;
@@ -272,6 +303,15 @@ import * as THREE from './vendor/three.module.min.js';
   if (heroEl) {
     heroEl.addEventListener('pointerdown', (e) => {
       if (e.target.closest('a, button, input')) return;
+      setPointer(e);
+      pinch.pts.set(e.pointerId, [e.clientX, e.clientY]);
+      if (pinch.pts.size === 2) {
+        // Second finger down — switch from rotate to pinch-zoom
+        drag.on = false;
+        heroEl.classList.remove('dragging');
+        pinch.dist = 0;
+        return;
+      }
       drag.on = true;
       drag.moved = 0;
       drag.lastX = e.clientX;
@@ -281,29 +321,61 @@ import * as THREE from './vendor/three.module.min.js';
       heroEl.classList.add('dragging');
     });
 
-    const endDrag = () => {
+    const endPointer = (e) => {
+      pinch.pts.delete(e.pointerId);
+      if (pinch.pts.size < 2) pinch.dist = 0;
       if (!drag.on) return;
       drag.on = false;
       heroEl.classList.remove('dragging');
-      // A click (not a drag) on a node opens the repo
-      if (drag.moved < 6 && hovered >= 0 && nodeData[hovered]) {
-        window.open(nodeData[hovered].url, '_blank', 'noopener');
+      // A click or tap (not a drag) on a node opens the repo
+      if (drag.moved < 8) {
+        const id = pickNode();
+        if (id >= 0 && nodeData[id] && Date.now() - lastOpen > 600) {
+          lastOpen = Date.now();
+          window.open(nodeData[id].url, '_blank', 'noopener');
+        }
       }
     };
-    window.addEventListener('pointerup', endDrag);
-    window.addEventListener('pointercancel', endDrag);
+    window.addEventListener('pointerup', endPointer);
+    window.addEventListener('pointercancel', endPointer);
+
+    // Trackpad pinch / ctrl+scroll zooms; plain scroll still scrolls the page
+    heroEl.addEventListener('wheel', (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      targetZ = Math.min(Z_MAX, Math.max(Z_MIN, targetZ + e.deltaY * 0.012));
+    }, { passive: false });
+
+    // Double-click toggles zoom (skips nodes — clicking those opens the repo)
+    heroEl.addEventListener('dblclick', (e) => {
+      if (e.target.closest('a, button, input')) return;
+      if (pickNode() >= 0) return;
+      targetZ = targetZ > 6.2 ? Z_MIN + 0.8 : Z_HOME;
+    });
+  }
+
+  function highlightEdges(i) {
+    if (!lineColAttr) return;
+    const arr = lineColAttr.array;
+    arr.set(baseLineCol);
+    if (i >= 0) {
+      edgeList.forEach((e, k) => {
+        if (e.a === i || e.b === i) {
+          arr.set([HIGHLIGHT.r, HIGHLIGHT.g, HIGHLIGHT.b, HIGHLIGHT.r, HIGHLIGHT.g, HIGHLIGHT.b], k * 6);
+        }
+      });
+    }
+    lineColAttr.needsUpdate = true;
   }
 
   function updateHover() {
-    if (!nodesMesh || !heroVisible) return;
-    raycaster.setFromCamera(pointer, camera);
-    const hits = raycaster.intersectObject(nodesMesh);
-    const id = hits.length ? hits[0].instanceId : -1;
+    if (!nodesMesh || !heroVisible || drag.on) return;
+    const id = pickNode();
     if (id === hovered) return;
 
-    // Restore previous
     if (hovered >= 0) setNodeScale(hovered, 1);
     hovered = id;
+    highlightEdges(hovered);
     if (hovered >= 0) {
       setNodeScale(hovered, 1.6);
       const r = nodeData[hovered];
@@ -332,7 +404,6 @@ import * as THREE from './vendor/three.module.min.js';
   }
 
   function updateOverlays() {
-    // Featured labels track their nodes; tooltip follows the pointer
     for (const { el, i } of labelEls) {
       const r = nodeData[i];
       nodeWorld.set(r.x, r.y, r.z).applyMatrix4(group.matrixWorld);
@@ -346,6 +417,20 @@ import * as THREE from './vendor/three.module.min.js';
       tooltip.style.left = (pointer.px + 14) + 'px';
       tooltip.style.top = (pointer.py + 14) + 'px';
     }
+  }
+
+  // Fade the hero copy away while zoomed in, so the graph is explorable
+  let lastFade = -1;
+  function updateZoomFade() {
+    const zf = Math.min(1, Math.max(0, (camera.position.z - 5.6) / 2.2));
+    if (Math.abs(zf - lastFade) < 0.01) return;
+    lastFade = zf;
+    if (heroContent) {
+      heroContent.style.opacity = zf;
+      heroContent.style.pointerEvents = zf < 0.35 ? 'none' : '';
+    }
+    if (scrollIndicator) scrollIndicator.style.opacity = zf;
+    if (heroEl) heroEl.style.setProperty('--scrim-o', zf);
   }
 
   // ---------- Render loop ----------
@@ -364,9 +449,12 @@ import * as THREE from './vendor/three.module.min.js';
       group.rotation.x += (0 - group.rotation.x) * 0.004;
     }
 
+    camera.position.z += (targetZ - camera.position.z) * 0.08;
+
     group.updateMatrixWorld();
     updateHover();
     updateOverlays();
+    updateZoomFade();
     renderer.render(scene, camera);
   }
 
@@ -420,7 +508,6 @@ import * as THREE from './vendor/three.module.min.js';
     });
     start();
   }).catch(() => {
-    // API rate limited or offline — leave a clean dark hero
     canvas.style.display = 'none';
   });
 })();

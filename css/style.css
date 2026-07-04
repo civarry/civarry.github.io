@@ -308,6 +308,7 @@ body.light-mode #scene-canvas {
     color-mix(in srgb, var(--bg) 72%, transparent) 55%,
     transparent 100%);
   pointer-events: none;
+  opacity: var(--scrim-o, 1);
 }
 
 .hero-content {
@@ -353,6 +354,14 @@ body.light-mode #scene-canvas {
   display: flex;
   justify-content: center;
   gap: 1rem;
+}
+
+.hero-hint {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-top: 2.4rem;
 }
 
 /* ========== Buttons ========== */
