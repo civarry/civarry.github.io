@@ -170,9 +170,15 @@ import * as THREE from './vendor/three.module.min.js';
 
   // ---------- Force-directed 3D layout ----------
   function layout(n, edges) {
+    // Unconnected repos feel almost no center pull, so they drift visibly
+    // apart from the constellation instead of hugging it
+    const degree = new Array(n).fill(0);
+    for (const e of edges) { degree[e.a]++; degree[e.b]++; }
+
     const p = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(1.5 + Math.random());
+      const r = degree[i] > 0 ? 1.5 + Math.random() : 2.6 + Math.random() * 1.2;
+      const v = new THREE.Vector3().randomDirection().multiplyScalar(r);
       p.set([v.x, v.y, v.z], i * 3);
     }
     const f = new Float32Array(n * 3);
@@ -198,18 +204,32 @@ import * as THREE from './vendor/three.module.min.js';
         f[a] += dx; f[a + 1] += dy; f[a + 2] += dz;
         f[b] -= dx; f[b + 1] -= dy; f[b + 2] -= dz;
       }
-      for (let i = 0; i < n * 3; i++) {
-        f[i] -= p[i] * 0.022;
-        p[i] += Math.max(-0.12, Math.min(0.12, f[i]));
+      for (let i = 0; i < n; i++) {
+        const pull = degree[i] > 0 ? 0.022 : 0.004;
+        for (let c = 0; c < 3; c++) {
+          const k = i * 3 + c;
+          f[k] -= p[k] * pull;
+          p[k] += Math.max(-0.12, Math.min(0.12, f[k]));
+        }
       }
     }
-    let maxR = 0;
+    // Normalize so the connected constellation fills radius 2.4; scattered
+    // nodes may sit further out, clamped to stay in frame
+    let maxConnected = 0;
+    for (let i = 0; i < n; i++) {
+      if (degree[i] === 0) continue;
+      const r = Math.hypot(p[i * 3], p[i * 3 + 1], p[i * 3 + 2]);
+      if (r > maxConnected) maxConnected = r;
+    }
+    const scale = 2.4 / (maxConnected || 1);
+    for (let i = 0; i < n * 3; i++) p[i] *= scale;
     for (let i = 0; i < n; i++) {
       const r = Math.hypot(p[i * 3], p[i * 3 + 1], p[i * 3 + 2]);
-      if (r > maxR) maxR = r;
+      if (r > 3.4) {
+        const s = 3.4 / r;
+        p[i * 3] *= s; p[i * 3 + 1] *= s; p[i * 3 + 2] *= s;
+      }
     }
-    const scale = 2.7 / (maxR || 1);
-    for (let i = 0; i < n * 3; i++) p[i] *= scale;
     return p;
   }
 
