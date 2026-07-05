@@ -10,12 +10,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=22">
+  <link rel="stylesheet" href="css/style.css?v=23">
 </head>
 <body>
 
-  <!-- 3D Scene Background -->
-  <canvas id="scene-canvas"></canvas>
+  <!-- Particle Background -->
+  <canvas id="particle-canvas"></canvas>
 
   <!-- Navigation -->
   <nav class="navbar" id="navbar">
@@ -47,17 +47,22 @@
 
   <!-- Hero Section -->
   <section class="hero">
-    <div class="hero-content">
-      <h1 class="hero-name fade-in">cj carito</h1>
-      <p class="hero-role fade-in delay-1">
-        <span class="hero-prompt">&gt;</span> i build <span class="typed-text" id="typed-text"></span><span class="cursor">_</span>
-      </p>
-      <p class="hero-desc fade-in delay-2">If something is tedious, repetitive, or doesn't exist yet — I'll probably build a tool for it.</p>
-      <div class="hero-buttons fade-in delay-3">
-        <a href="#projects" class="btn-primary">see my work</a>
-        <a href="#contact" class="btn-outline">get in touch</a>
+    <div class="hero-inner">
+      <div class="hero-content">
+        <h1 class="hero-name fade-in">cj carito</h1>
+        <p class="hero-role fade-in delay-1">
+          <span class="hero-prompt">&gt;</span> i build <span class="typed-text" id="typed-text"></span><span class="cursor">_</span>
+        </p>
+        <p class="hero-desc fade-in delay-2">If something is tedious, repetitive, or doesn't exist yet — I'll probably build a tool for it.</p>
+        <div class="hero-buttons fade-in delay-3">
+          <a href="#projects" class="btn-primary">see my work</a>
+          <a href="#contact" class="btn-outline">get in touch</a>
+        </div>
+        <p class="hero-hint fade-in delay-4">every dot is one of my repos, connected by similarity —<br>drag to spin · scroll to zoom · click a node to open it · new repos glow</p>
       </div>
-      <p class="hero-hint fade-in delay-4">every dot is one of my repos — drag to spin · double-click to zoom · click a node to open it</p>
+      <div class="hero-scene fade-in delay-2">
+        <canvas id="scene-canvas"></canvas>
+      </div>
     </div>
     <div class="scroll-indicator fade-in delay-4">
       <div class="scroll-arrow"></div>
@@ -294,7 +299,8 @@
     </div>
   </footer>
 
-  <script type="module" src="js/scene.js?v=5"></script>
+  <script src="js/particles.js?v=2"></script>
+  <script type="module" src="js/scene.js?v=6"></script>
   <script src="js/app.js?v=20"></script>
 </body>
 </html>

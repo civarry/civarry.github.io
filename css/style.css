@@ -58,16 +58,36 @@ a { color: inherit; }
   outline-offset: 3px;
 }
 
-/* ========== 3D Scene Canvas ========== */
-#scene-canvas {
+/* ========== Particle Background ========== */
+#particle-canvas {
   position: fixed;
   inset: 0;
   width: 100% !important;
   height: 100% !important;
-  max-width: 100%;
   z-index: 0;
   pointer-events: none;
+  opacity: 0.5;
 }
+
+/* ========== 3D Constellation Canvas (contained widget) ========== */
+.hero-scene {
+  position: relative;
+  height: min(74vh, 660px);
+  min-width: 0;
+}
+
+#scene-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#scene-canvas.dragging { cursor: grabbing; }
 
 body.light-mode #scene-canvas {
   filter: invert(1) hue-rotate(180deg);
@@ -284,41 +304,22 @@ body.light-mode #scene-canvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 0 24px;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: pan-y;
+  padding: 90px 24px 40px;
 }
 
-.hero.dragging { cursor: grabbing; }
-
-/* Readability scrim — clears the particles out from behind the text */
-.hero::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: min(760px, 94vw);
-  height: min(520px, 74vh);
-  background: radial-gradient(ellipse closest-side,
-    color-mix(in srgb, var(--bg) 96%, transparent) 0%,
-    color-mix(in srgb, var(--bg) 72%, transparent) 55%,
-    transparent 100%);
-  pointer-events: none;
-  opacity: var(--scrim-o, 1);
+.hero-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  align-items: center;
+  gap: 3rem;
+  width: 100%;
+  max-width: 1160px;
 }
 
-.hero-content {
-  max-width: 820px;
-  position: relative;
-  z-index: 1;
-}
+.hero-content { min-width: 0; }
 
 .hero-name {
-  font-size: clamp(3.5rem, 11vw, 7.5rem);
+  font-size: clamp(3rem, 6.5vw, 5.4rem);
   font-weight: 200;
   letter-spacing: -0.04em;
   line-height: 1.05;
@@ -346,13 +347,12 @@ body.light-mode #scene-canvas {
 .hero-desc {
   font-size: 0.95rem;
   color: var(--text-secondary);
-  max-width: 460px;
-  margin: 0 auto 2.5rem;
+  max-width: 420px;
+  margin: 0 0 2.5rem;
 }
 
 .hero-buttons {
   display: flex;
-  justify-content: center;
   gap: 1rem;
 }
 
@@ -360,6 +360,7 @@ body.light-mode #scene-canvas {
   font-family: var(--font-mono);
   font-size: 0.62rem;
   letter-spacing: 0.05em;
+  line-height: 1.9;
   color: var(--text-dim);
   margin-top: 2.4rem;
 }
@@ -1334,6 +1335,19 @@ body.light-mode .gh-level-0 { background: #e4e4e8; }
   .projects-grid { grid-template-columns: 1fr; }
   .terminal-row { grid-template-columns: 1fr; }
   .section { padding: 5rem 0; }
+
+  .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .hero-desc { margin-left: auto; margin-right: auto; }
+  .hero-buttons { justify-content: center; }
+  .hero-scene { height: 46vh; }
+
+  /* Vertical swipes scroll the page; horizontal drags spin the graph */
+  #scene-canvas { touch-action: pan-y; }
 }
 
 @media (max-width: 720px) {
