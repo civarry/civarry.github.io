@@ -20,6 +20,7 @@ jobs:
       - name: Audit repos against the documentation standard
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
+          MANAGE_ISSUES: "1"
         run: python .github/scripts/audit_repos.py
 
       - name: Commit if changed
