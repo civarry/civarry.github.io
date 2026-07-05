@@ -217,6 +217,7 @@ import * as THREE from './vendor/three.module.min.js';
   let glowSprites = [];
   let tooltip = null;
   let edgeList = [];
+  let linesObj = null;
   let lineColAttr = null;
   let baseLineCol = null;
   const baseScales = [];
@@ -271,9 +272,10 @@ import * as THREE from './vendor/three.module.min.js';
     lineGeo.setAttribute('position', new THREE.BufferAttribute(linePos, 3));
     lineColAttr = new THREE.BufferAttribute(lineCol, 3);
     lineGeo.setAttribute('color', lineColAttr);
-    group.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({
+    linesObj = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({
       vertexColors: true, transparent: true, opacity: 0.45, depthWrite: false
-    })));
+    }));
+    group.add(linesObj);
 
     nodeData = repos.map((r, i) => ({
       ...r,
@@ -338,6 +340,14 @@ import * as THREE from './vendor/three.module.min.js';
     raycaster.setFromCamera(pointer, camera);
     const hits = raycaster.intersectObject(nodesMesh);
     return hits.length ? hits[0].instanceId : -1;
+  }
+
+  function pickEdge() {
+    if (!linesObj || !pointer.over) return -1;
+    raycaster.params.Line.threshold = 0.06;
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObject(linesObj);
+    return hits.length ? Math.floor(hits[0].index / 2) : -1;
   }
 
   canvas.addEventListener('pointerenter', () => { pointer.over = true; });
@@ -418,16 +428,18 @@ import * as THREE from './vendor/three.module.min.js';
     targetZ = targetZ > 6 ? Z_MIN + 0.8 : Z_HOME;
   });
 
-  function highlightEdges(i) {
+  let hoveredEdge = -1;
+
+  function recolorEdges() {
     if (!lineColAttr) return;
     const arr = lineColAttr.array;
     arr.set(baseLineCol);
-    if (i >= 0) {
-      edgeList.forEach((e, k) => {
-        if (e.a === i || e.b === i) {
-          arr.set([HIGHLIGHT.r, HIGHLIGHT.g, HIGHLIGHT.b, HIGHLIGHT.r, HIGHLIGHT.g, HIGHLIGHT.b], k * 6);
-        }
-      });
+    const paint = (k) => arr.set(
+      [HIGHLIGHT.r, HIGHLIGHT.g, HIGHLIGHT.b, HIGHLIGHT.r, HIGHLIGHT.g, HIGHLIGHT.b], k * 6);
+    if (hovered >= 0) {
+      edgeList.forEach((e, k) => { if (e.a === hovered || e.b === hovered) paint(k); });
+    } else if (hoveredEdge >= 0) {
+      paint(hoveredEdge);
     }
     lineColAttr.needsUpdate = true;
   }
@@ -435,11 +447,14 @@ import * as THREE from './vendor/three.module.min.js';
   function updateHover() {
     if (!nodesMesh || drag.on) return;
     const id = pickNode();
-    if (id === hovered) return;
+    const ek = id >= 0 ? -1 : pickEdge();
+    if (id === hovered && ek === hoveredEdge) return;
 
     if (hovered >= 0) setNodeScale(hovered, 1);
     hovered = id;
-    highlightEdges(hovered);
+    hoveredEdge = ek;
+    recolorEdges();
+
     if (hovered >= 0) {
       setNodeScale(hovered, 1.6);
       const r = nodeData[hovered];
@@ -455,6 +470,17 @@ import * as THREE from './vendor/three.module.min.js';
       }
       tooltip.style.display = 'block';
       canvas.style.cursor = 'pointer';
+    } else if (hoveredEdge >= 0) {
+      const e = edgeList[hoveredEdge];
+      tooltip.textContent = '';
+      const title = document.createElement('strong');
+      title.textContent = nodeData[e.a].name + ' ↔ ' + nodeData[e.b].name;
+      tooltip.appendChild(title);
+      const d = document.createElement('em');
+      d.textContent = Math.round(Math.min(1, e.sim) * 100) + '% similar';
+      tooltip.appendChild(d);
+      tooltip.style.display = 'block';
+      canvas.style.cursor = '';
     } else {
       tooltip.style.display = 'none';
       canvas.style.cursor = '';
