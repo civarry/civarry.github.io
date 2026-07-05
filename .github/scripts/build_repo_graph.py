@@ -4,6 +4,7 @@ The site falls back to token-overlap similarity for repos created after
 the last run of this script."""
 import json
 import os
+import re
 import urllib.request
 from datetime import datetime, timezone
 
@@ -20,6 +21,31 @@ req = urllib.request.Request(
 raw = json.load(urllib.request.urlopen(req))
 repos = [r for r in raw if not r['fork'] and not r.get('private')]
 
+
+def fetch_readme_excerpt(full_name, chars=900):
+    """First ~900 chars of the README, markdown noise stripped.
+    MiniLM truncates at 256 tokens anyway, so this is plenty."""
+    try:
+        rq = urllib.request.Request(
+            f'https://api.github.com/repos/{full_name}/readme',
+            headers={
+                'Authorization': 'Bearer ' + os.environ['GH_PAT'],
+                'Accept': 'application/vnd.github.raw+json',
+            },
+        )
+        text = urllib.request.urlopen(rq).read().decode('utf-8', 'ignore')
+    except Exception:
+        return ''
+    # Strip images, links-to-urls, html tags, badges, code fences
+    text = re.sub(r'!\[[^\]]*\]\([^)]*\)', ' ', text)
+    text = re.sub(r'\[([^\]]*)\]\([^)]*\)', r'\1', text)
+    text = re.sub(r'<[^>]+>', ' ', text)
+    text = re.sub(r'```.*?```', ' ', text, flags=re.S)
+    text = re.sub(r'[#*`>|-]', ' ', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text[:chars]
+
+
 texts = []
 for r in repos:
     parts = [r['name'].replace('-', ' ').replace('_', ' ')]
@@ -29,6 +55,9 @@ for r in repos:
         parts.append(' '.join(r['topics']))
     if r['language']:
         parts.append(r['language'])
+    readme = fetch_readme_excerpt(r['full_name'])
+    if readme:
+        parts.append(readme)
     texts.append('. '.join(parts))
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
