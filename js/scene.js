@@ -497,7 +497,9 @@ import * as THREE from './vendor/three.module.min.js';
     const t = clock.getElapsedTime();
 
     if (!drag.on) {
-      group.rotation.y += 0.0011 + drag.velY;
+      // Reduced motion: no idle auto-spin, but drag momentum (user-initiated)
+      // still settles naturally
+      group.rotation.y += (reduceMotion ? 0 : 0.0011) + drag.velY;
       group.rotation.x += drag.velX;
       drag.velY *= 0.95;
       drag.velX *= 0.95;
@@ -506,9 +508,11 @@ import * as THREE from './vendor/three.module.min.js';
 
     camera.position.z += (targetZ - camera.position.z) * 0.08;
 
-    for (const g of glowSprites) {
-      const s = g.base * (1 + 0.22 * Math.sin(t * 2.4 + g.phase));
-      g.sp.scale.set(s, s, 1);
+    if (!reduceMotion) {
+      for (const g of glowSprites) {
+        const s = g.base * (1 + 0.22 * Math.sin(t * 2.4 + g.phase));
+        g.sp.scale.set(s, s, 1);
+      }
     }
 
     group.updateMatrixWorld();
@@ -518,7 +522,7 @@ import * as THREE from './vendor/three.module.min.js';
   }
 
   function start() {
-    if (running || reduceMotion) return;
+    if (running) return;
     running = true;
     requestAnimationFrame(frame);
   }
@@ -542,12 +546,6 @@ import * as THREE from './vendor/three.module.min.js';
   getGraphData().then(({ repos, edges }) => {
     buildGraph(repos, edges);
     resize();
-    if (reduceMotion) {
-      group.updateMatrixWorld();
-      updateOverlays();
-      renderer.render(scene, camera);
-      return;
-    }
     const labelBox = document.getElementById('graph-labels');
     if ('IntersectionObserver' in window) {
       new IntersectionObserver((entries) => {
