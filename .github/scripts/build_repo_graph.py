@@ -64,6 +64,10 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 emb = model.encode(texts, normalize_embeddings=True)
 sim = emb @ emb.T
 
+# Only genuinely related repos connect — no forced edges. Repos without
+# a real semantic neighbor stay scattered until later work relates to them.
+EDGE_MIN = 0.30
+
 n = len(repos)
 edges = {}
 for i in range(n):
@@ -73,9 +77,7 @@ for i in range(n):
         j = int(j)
         if j == i:
             continue
-        # Always keep the single best neighbor so no repo is orphaned;
-        # further neighbors must clear the similarity floor
-        if picked > 0 and sim[i][j] < 0.25:
+        if sim[i][j] < EDGE_MIN:
             break
         key = (min(i, j), max(i, j))
         edges.setdefault(key, round(float(sim[i][j]), 4))

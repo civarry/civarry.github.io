@@ -103,8 +103,9 @@ import * as THREE from './vendor/three.module.min.js';
         sims.push({ j, sim: similarity(repos[i], repos[j]) });
       }
       sims.sort((x, y) => y.sim - x.sim);
-      sims.slice(0, 3).forEach(({ j, sim }, rank) => {
-        if (sim < 0.1 && rank > 0) return;
+      // Only genuinely related repos connect — unrelated ones stay scattered
+      sims.slice(0, 3).forEach(({ j, sim }) => {
+        if (sim < 0.2) return;
         const key = Math.min(i, j) + '-' + Math.max(i, j);
         if (!edgeMap.has(key)) edgeMap.set(key, { a: Math.min(i, j), b: Math.max(i, j), sim });
       });
@@ -148,7 +149,9 @@ import * as THREE from './vendor/three.module.min.js';
           repos[i].stars = lr.stars;
           repos[i].desc = lr.desc || repos[i].desc;
         } else {
-          // Brand new repo — not embedded yet, wire it in via token similarity
+          // Brand new repo — not embedded yet. Token similarity may relate it
+          // to existing work; otherwise it floats scattered until the nightly
+          // embedding run (or until related projects exist)
           lr.tokens = tokenize(lr);
           lr.isNew = true;
           const idx = repos.length;
@@ -156,8 +159,8 @@ import * as THREE from './vendor/three.module.min.js';
             .sort((x, y) => y.sim - x.sim)
             .slice(0, 3);
           repos.push(lr);
-          sims.forEach(({ j, sim }, rank) => {
-            if (sim >= 0.08 || rank === 0) edges.push({ a: j, b: idx, sim: Math.max(sim, 0.15) });
+          sims.forEach(({ j, sim }) => {
+            if (sim >= 0.2) edges.push({ a: j, b: idx, sim });
           });
         }
       }
