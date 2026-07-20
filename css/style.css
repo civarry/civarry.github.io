@@ -1329,10 +1329,31 @@ body.light-mode .gh-level-0 { background: #e4e4e8; }
   transition: opacity 0.8s ease;
 }
 
+/* ========== Shipped Apps Grid ========== */
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.app-cta {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1.4rem;
+  border-top: 1px solid var(--border);
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 920px) {
   .about-row { grid-template-columns: repeat(2, 1fr); }
   .projects-grid { grid-template-columns: 1fr; }
+  .apps-grid { grid-template-columns: 1fr; }
   .terminal-row { grid-template-columns: 1fr; }
   .section { padding: 5rem 0; }
 
