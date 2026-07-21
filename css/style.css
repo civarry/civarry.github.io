@@ -1349,6 +1349,49 @@ body.light-mode .gh-level-0 { background: #e4e4e8; }
   border-top: 1px solid var(--border);
 }
 
+/* ========== Standalone Apps Page ========== */
+.apps-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 24px 0;
+}
+
+.apps-back {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.apps-back:hover { color: var(--accent); }
+
+.apps-hero {
+  padding: 4.5rem 0 3.5rem;
+  text-align: center;
+}
+
+.apps-hero h1 {
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+
+.apps-hero .title-slash { color: var(--accent); }
+
+.apps-hero p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
 /* ========== Responsive ========== */
 @media (max-width: 920px) {
   .about-row { grid-template-columns: repeat(2, 1fr); }

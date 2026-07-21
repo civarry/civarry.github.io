@@ -8,9 +8,8 @@
 //   url         — where to install/open it
 //   cta         — link text shown at the bottom of the card, e.g. "Chrome Web Store"
 //   tech        — array of tech/stack pills (optional, omit or leave empty)
-//   repo        — GitHub repo name (optional) — if set and it matches a repo in
-//                 civarry's GitHub, the card picks up live star/download stats
-//                 for free via the existing repo-stats fetcher in app.js
+//   repo        — GitHub repo name (optional) — if set, the card picks up a live
+//                 star count and "updated X ago" from the GitHub API, for free
 const APPS = [
   {
     name: 'Lasso',
@@ -64,7 +63,7 @@ const APPS = [
     const repoAttr = app.repo ? ' data-repo="' + app.repo + '"' : '';
 
     return (
-      '<a href="' + app.url + '" target="_blank" rel="noopener noreferrer" class="project-card reveal reveal-delay-' + ((i % 5) + 1) + '"' + repoAttr + '>' +
+      '<a href="' + app.url + '" target="_blank" rel="noopener noreferrer" class="project-card fade-in delay-' + ((i % 4) + 1) + '"' + repoAttr + '>' +
         '<div class="window-bar">' +
           '<span class="wdot wdot-red">' + closeSvg + '</span>' +
           '<span class="wdot wdot-yellow">' + minSvg + '</span>' +
@@ -82,4 +81,55 @@ const APPS = [
       '</a>'
     );
   }).join('');
+
+  loadLiveStats();
 })();
+
+// Live star count + last-updated for any card with a data-repo attribute.
+// Self-contained (doesn't depend on the portfolio's app.js) so this file
+// works standalone on the /apps/ page.
+async function loadLiveStats() {
+  const cards = document.querySelectorAll('.project-card[data-repo]');
+  if (!cards.length) return;
+
+  const CACHE_KEY = 'repo_stats_v1';
+  const CACHE_TTL = 3600000; // 1 hour
+
+  function timeAgo(iso) {
+    const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+    if (days === 0) return 'today';
+    if (days === 1) return 'yesterday';
+    if (days < 30) return days + ' days ago';
+    const months = Math.floor(days / 30);
+    if (months < 12) return months + ' month' + (months > 1 ? 's' : '') + ' ago';
+    const years = Math.floor(months / 12);
+    return years + ' year' + (years > 1 ? 's' : '') + ' ago';
+  }
+
+  let stats = null;
+  try {
+    const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+    if (cached && Date.now() - cached.ts < CACHE_TTL) stats = cached.data;
+  } catch { /* ignore corrupt cache */ }
+
+  if (!stats) {
+    try {
+      const res = await fetch('https://api.github.com/users/civarry/repos?per_page=100');
+      if (!res.ok) return;
+      const repos = await res.json();
+      stats = {};
+      repos.forEach(r => { stats[r.name] = { stars: r.stargazers_count, pushed: r.pushed_at }; });
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: stats })); } catch { /* full/unavailable */ }
+    } catch { return; }
+  }
+
+  cards.forEach(card => {
+    const info = stats[card.dataset.repo];
+    const meta = card.querySelector('.project-meta');
+    if (!info || !meta) return;
+    const parts = [];
+    if (info.stars > 0) parts.push('<span><span class="meta-star">★</span> ' + info.stars + '</span>');
+    parts.push('<span>updated ' + timeAgo(info.pushed) + '</span>');
+    meta.innerHTML = parts.join('<span>·</span>');
+  });
+}
