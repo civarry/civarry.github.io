@@ -1357,6 +1357,11 @@ body.light-mode .gh-level-0 { background: #e4e4e8; }
   outline: none;
 }
 
+.app-tile-icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
 .app-tile-icon {
   width: 72px;
   height: 72px;
@@ -1365,9 +1370,30 @@ body.light-mode .gh-level-0 { background: #e4e4e8; }
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s;
 }
 
+.app-tile-icon.is-coming-soon {
+  filter: grayscale(0.55) brightness(0.8);
+}
+
 .app-tile:hover .app-tile-icon, .app-tile:focus-visible .app-tile-icon {
   transform: scale(1.06);
   box-shadow: 0 14px 38px rgba(4, 158, 244, 0.28);
+}
+
+.app-tile-badge {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: var(--bg-inset);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 0.2em 0.6em;
+  white-space: nowrap;
 }
 
 .app-tile-name {
@@ -1475,6 +1501,14 @@ body.no-scroll { overflow: hidden; }
   align-items: center;
   justify-content: center;
   width: 100%;
+}
+
+.app-modal-cta.is-disabled {
+  color: var(--text-dim);
+  border-color: var(--border-strong);
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* ========== Standalone Apps Page ========== */

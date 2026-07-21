@@ -11,6 +11,9 @@
 //   tech        — array of tech/stack pills (optional, omit or leave empty)
 //   repo        — GitHub repo name (optional) — if set, the popup picks up a
 //                 live star count and "updated X ago" from the GitHub API
+//   comingSoon  — true if it's not released anywhere yet (optional). Skips the
+//                 install/open link and shows a "coming soon" badge instead.
+//                 Omit `url`/`cta` for these — they're not used.
 const APPS = [
   {
     name: 'Lasso',
@@ -58,6 +61,14 @@ const APPS = [
     cta: 'Open App',
     tech: ['JavaScript', 'WebSocket', 'PWA'],
     repo: 'motioncast'
+  },
+  {
+    name: 'CamO',
+    icon: 'icons/camo.png',
+    tag: 'ios app',
+    description: 'Pick any photo you love and CamO overlays the pose on your camera view, live-scoring how closely you match it — per-limb coaching, haptic lock, auto-capture, and on-device filters. Everything runs locally, nothing leaves the phone.',
+    tech: ['Swift', 'SwiftUI', 'Vision'],
+    comingSoon: true
   }
 ];
 
@@ -68,7 +79,10 @@ const APPS = [
   // ---------- Tile grid ----------
   grid.innerHTML = APPS.map((app, i) =>
     '<button type="button" class="app-tile fade-in delay-' + ((i % 4) + 1) + '" data-index="' + i + '">' +
-      '<img class="app-tile-icon" src="' + app.icon + '" alt="" loading="lazy" width="72" height="72">' +
+      '<span class="app-tile-icon-wrap">' +
+        '<img class="app-tile-icon' + (app.comingSoon ? ' is-coming-soon' : '') + '" src="' + app.icon + '" alt="" loading="lazy" width="72" height="72">' +
+        (app.comingSoon ? '<span class="app-tile-badge">soon</span>' : '') +
+      '</span>' +
       '<span class="app-tile-name">' + app.name + '</span>' +
       '<span class="app-tile-tag">' + app.tag + '</span>' +
     '</button>'
@@ -115,8 +129,17 @@ const APPS = [
     elName.textContent = app.name;
     elTag.textContent = app.tag;
     elDesc.textContent = app.description;
-    elCta.href = app.url;
-    elCta.textContent = app.cta;
+    if (app.comingSoon) {
+      elCta.removeAttribute('href');
+      elCta.removeAttribute('target');
+      elCta.classList.add('is-disabled');
+      elCta.textContent = 'Coming soon';
+    } else {
+      elCta.href = app.url;
+      elCta.target = '_blank';
+      elCta.classList.remove('is-disabled');
+      elCta.textContent = app.cta;
+    }
     elTech.innerHTML = (app.tech && app.tech.length)
       ? app.tech.map(t => '<span>' + t + '</span>').join('')
       : '';
