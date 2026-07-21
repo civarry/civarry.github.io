@@ -48,6 +48,16 @@ const APPS = [
     url: 'https://remitly-seven.vercel.app/',
     cta: 'Open App',
     tech: ['Next.js']
+  },
+  {
+    name: 'MotionCast',
+    icon: 'icons/motioncast.png',
+    tag: 'web app',
+    description: 'Turns a phone into a real-time motion source for any computer — orientation, gyro, and two-way haptics stream over a local HTTPS + WebSocket link. Scan a QR code to pair, then use the live sensor data or the built-in tilt-controlled ball game.',
+    url: 'https://motioncast.onrender.com',
+    cta: 'Open App',
+    tech: ['JavaScript', 'WebSocket', 'PWA'],
+    repo: 'motioncast'
   }
 ];
 
