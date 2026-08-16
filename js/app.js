@@ -602,7 +602,7 @@ const FS = {
     'Coffee:   Required',
     '',
     'I find problems that annoy me, then build things to fix them.',
-    "3+ years in tech — ML, LLMs, and building things that",
+    "3+ years in tech: ML, LLMs, and building things that",
     "probably shouldn't be running on free tiers."
   ],
   'skills.json': [
@@ -620,7 +620,7 @@ const FS = {
     'contact:',
     '  github: github.com/civarry',
     '  linkedin: linkedin.com/in/cccarito',
-    '  form: "scroll down — it has a cool pipeline viz"'
+    '  form: "scroll down, it has a cool pipeline viz"'
   ],
   'education.md': [
     '# Education',
@@ -639,7 +639,7 @@ const FS = {
     'lasso.md': [
       '# Lasso',
       'Circle to Search, but native to the Mac. Swift menu-bar app.',
-      'OCR, in-place translation, ask-AI, object ID — local by default',
+      'OCR, in-place translation, ask-AI, object ID: local by default',
       'via Apple Intelligence + Ollama. Nothing leaves your machine',
       'unless you opt in. 15+ releases shipped.'
     ],
@@ -951,7 +951,7 @@ const terminalCommands = {
     if (!args) return ['Usage: grep &lt;pattern&gt; &lt;file&gt;'];
     return ['<span class="t-dim">grep: try cat instead, this is a simple shell.</span>'];
   },
-  find: () => ['<span class="t-dim">find: try "ls" and "cd" — you\'ll find what you need.</span>'],
+  find: () => ['<span class="t-dim">find: try "ls" and "cd", you\'ll find what you need.</span>'],
   history: () => ['<span class="t-dim">Nice try. History is cleared on every session.</span>'],
   id: () => ['uid=1000(visitor) gid=1000(visitor) groups=1000(visitor)'],
   uname: () => ['Linux cj-portfolio 6.1.0-free-tier #1 SMP x86_64 GNU/Linux'],
@@ -1454,12 +1454,17 @@ function checkAllClosed() {
   });
 
   function startGame() {
-    const cells = Array.from(grid.querySelectorAll('.gh-cell'));
-    if (cells.length < ROWS) return;
+    // The current week's column is usually short (only today's day rendered
+    // so far), so cell count isn't always a multiple of ROWS. Drop that
+    // trailing partial column rather than bailing out of the game entirely.
+    const allCells = Array.from(grid.querySelectorAll('.gh-cell'));
+    if (allCells.length < ROWS) return;
+    const usableCols = Math.floor(allCells.length / ROWS);
+    if (usableCols < 1) return;
+    const cells = allCells.slice(0, usableCols * ROWS);
 
     const totalCells = cells.length;
     const COLS = totalCells / ROWS;
-    if (COLS !== Math.floor(COLS)) return;
 
     gameActive = true;
 
@@ -1505,7 +1510,7 @@ function checkAllClosed() {
     if (legend) legend.style.display = 'none';
     if (stats) stats.innerHTML =
       '<span class="gh-snake-status">' +
-        '<span class="gh-snake-score">0</span> / ' + foodTotal + ' eaten — arrow keys to play' +
+        '<span class="gh-snake-score">0</span> / ' + foodTotal + ' eaten · arrow keys to play' +
       '</span>';
 
     grid.classList.add('gh-snake-active');
@@ -1587,7 +1592,7 @@ function checkAllClosed() {
       if (stats) {
         stats.innerHTML = won
           ? '<span class="gh-snake-status">All commits devoured!</span>'
-          : '<span class="gh-snake-status">Game over — ' + score + ' / ' + foodTotal + ' eaten</span>';
+          : '<span class="gh-snake-status">Game over: ' + score + ' / ' + foodTotal + ' eaten</span>';
       }
 
       // Restore after delay

@@ -19,7 +19,7 @@ const APPS = [
     name: 'Lasso',
     icon: 'icons/lasso.png',
     tag: 'macos app',
-    description: 'Circle to Search, but native to the Mac. Hit a hotkey, drag a box around anything on screen, and copy the text out of it, translate it, ask AI about it, or scan a QR code — on-device by default.',
+    description: 'Circle to Search, but native to the Mac. Hit a hotkey, drag a box around anything on screen, and copy the text out of it, translate it, ask AI about it, or scan a QR code. On-device by default.',
     url: 'https://github.com/civarry/lasso-app',
     cta: 'GitHub',
     tech: ['Swift', 'Apple Intelligence', 'Ollama'],
@@ -29,7 +29,7 @@ const APPS = [
     name: 'Proofr',
     icon: 'icons/proofr.png',
     tag: 'chrome extension',
-    description: 'Private AI proofreading and rewriting from the browser’s right-click menu. Fixes grammar, rewrites tone across nine styles, and translates — on-device by default, no account required.',
+    description: 'Private AI proofreading and rewriting from the browser’s right-click menu. Fixes grammar, rewrites tone across nine styles, and translates. On-device by default, no account required.',
     url: 'https://chromewebstore.google.com/detail/proofr-%E2%80%93-private-ai-proof/dfhooimjbdefdbabhppgloclhkjolhfg',
     cta: 'Chrome Web Store',
     tech: ['Chrome Extension', 'On-device AI']
@@ -38,7 +38,7 @@ const APPS = [
     name: 'TW Bus',
     icon: 'icons/tw-bus.png',
     tag: 'web app',
-    description: 'Real-time bus trip planning in Taiwan — live location paired with route lookup by bus number, sorting by fewest stops or soonest ETA, and an AI copilot that answers questions about your results.',
+    description: 'Real-time bus trip planning in Taiwan: live location paired with route lookup by bus number, sorting by fewest stops or soonest ETA, and an AI copilot that answers questions about your results.',
     url: 'https://tw-bus.vercel.app/',
     cta: 'Open App',
     tech: ['Next.js', 'AI']
@@ -47,7 +47,7 @@ const APPS = [
     name: 'Remit Compare',
     icon: 'icons/remit-compare.png',
     tag: 'web app',
-    description: 'Compares the real cost of sending NTD to PHP across remittance channels — fees and spreads side by side against the mid-market rate, so you know what actually arrives.',
+    description: 'Compares the real cost of sending NTD to PHP across remittance channels: fees and spreads side by side against the mid-market rate, so you know what actually arrives.',
     url: 'https://remitly-seven.vercel.app/',
     cta: 'Open App',
     tech: ['Next.js']
@@ -56,7 +56,7 @@ const APPS = [
     name: 'MotionCast',
     icon: 'icons/motioncast.png',
     tag: 'web app',
-    description: 'Turns a phone into a real-time motion source for any computer — orientation, gyro, and two-way haptics stream over a local HTTPS + WebSocket link. Scan a QR code to pair, then use the live sensor data or the built-in tilt-controlled ball game.',
+    description: 'Turns a phone into a real-time motion source for any computer: orientation, gyro, and two-way haptics stream over a local HTTPS + WebSocket link. Scan a QR code to pair, then use the live sensor data or the built-in tilt-controlled ball game.',
     url: 'https://motioncast.onrender.com',
     cta: 'Open App',
     tech: ['JavaScript', 'WebSocket', 'PWA'],
@@ -66,7 +66,7 @@ const APPS = [
     name: 'CamO',
     icon: 'icons/camo.png',
     tag: 'ios app',
-    description: 'Pick any photo you love and CamO overlays the pose on your camera view, live-scoring how closely you match it — per-limb coaching, haptic lock, auto-capture, and on-device filters. Everything runs locally, nothing leaves the phone.',
+    description: 'Pick any photo you love and CamO overlays the pose on your camera view, live-scoring how closely you match it: per-limb coaching, haptic lock, auto-capture, and on-device filters. Everything runs locally, nothing leaves the phone.',
     tech: ['Swift', 'SwiftUI', 'Vision'],
     comingSoon: true
   }
